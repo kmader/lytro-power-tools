@@ -1,0 +1,4481 @@
+{
+  "title": "LFP picture schema",
+  "description": "Copyright © 2014 Lytro, Inc.  All Rights Reserved.\n\nNOTICE: This file is proprietary to Lytro, Inc. (''Lytro'') and may be subject to patent, copyright, and other intellectual property and contractual protections. It can be used to validate metadata in LFP files that are fully compliant with an LFP specification published by Lytro. Any other use, and any modification and distribution, of this file require a separate written agreement with Lytro.\n\nThis file is distributed WITHOUT ANY WARRANTY, including but not limited to the implied warranties of MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE or NON-INFRINGEMENT.  See your license for more details.",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [ "schema", "generators", "thumbnails", "derivations", "frames", "annotations", "views" ],
+  "additionalProperties": false,
+  "properties":
+  {
+    "schema":
+    {
+      "title": "http://schema.lytro.com/lfp/picture/2.1.6/picture_schema.json",
+      "description": "schema that describes the metadata, append devN to the version number for development releases",
+      "type": "string",
+      "format": "uri"
+    },
+    "generators":
+    {
+      "description": "list of programs responsible for generating this metadata; replace or append most recent to end",
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "thumbnails":
+    {
+      "type": "array",
+      "minItems": 0,
+      "uniqueItems": true,
+      "items": 
+      {
+        "title": "thumbnail",
+        "description": "small image that represents the picture",
+        "type": "object",
+        "required": [ "representation", "width", "height" ],
+        "oneOf":
+        [
+          { "required": [ "imageRef"  ] },
+          { "required": [ "imageUrl"  ] },
+          { "required": [ "imagePath" ] }
+        ],
+        "additionalProperties": false,
+        "properties":
+        {
+          "imageRef":       { "$ref": "#/definitions/blobRef" },
+          "imageUrl":       { "$ref": "#/definitions/url" },
+          "imagePath":      { "$ref": "#/definitions/path" },
+          "representation": { "$ref": "#/definitions/imageRepresentation"},
+          "width":          { "$ref": "#/definitions/discretePixelDimension" },
+          "height":         { "$ref": "#/definitions/discretePixelDimension" },
+          "colorSpace":
+          {
+            "allOf":
+            [
+              { "$ref": "#/definitions/colorSpace" },
+              { "default": "sRGB" }
+            ]
+          }
+        }
+      }
+    },
+    "derivations":
+    {
+      "description": " [ great-grandfather, grandfather, father, current ], current must always be included",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/pictureID" }
+    },
+    "frames":
+    {
+      "type": "array",
+      "minItems": 1,
+      "items":
+      {
+        "type": "object",
+        "required": [ "frame", "assignedProperties", "accelerations" ],
+        "additionalProperties": false,
+        "properties":
+        {
+          "frame":
+          {
+            "description": "links to frame data and metadata",
+            "type": "object",
+            "required": [ "imageRef", "metadataRef" ],
+            "additionalProperties": false,
+            "properties":
+            {
+              "imageRef":
+              {
+                "description": "immutable raw sensor data, in a format described in *metadataRef",
+                "$ref": "#/definitions/blobRef"
+              },
+              "metadataRef":
+              {
+                "description": "immutable frame metadata",
+                "$ref": "#/definitions/blobRef"
+              },
+              "privateMetadataRef":
+              {
+                "description": "immutable frame metadata that could reveal the identity of the camera owner, may be omitted",
+                "$ref": "#/definitions/blobRef"
+              },
+              "calibrationDataRef":
+              {
+                "description": "DEPRECATED, calibration data, format not currently defined in *metadataRef",
+                "$ref": "#/definitions/blobRef"
+              },
+              "hotPixelRef":
+              {
+                "description": "hot pixel map, not further defined in this metadata",
+                "$ref": "#/definitions/blobRef"
+              },
+              "geometryCorrectionRef":
+              {
+                "description": "geometry correction data, not further defined in this metadata",
+                "$ref": "#/definitions/blobRef"
+              },
+              "exposureHistogramRef":
+              {
+                "description": "histogram of pixel values",
+                "$ref": "#/definitions/blobRef"
+              },
+              "aberrationCorrectionRef":
+              {
+                "description": "aberration correction data, not further defined in this metadata",
+                "$ref": "#/definitions/blobRef"
+              },
+              "aberrationCorrectionMetadataRef":
+              {
+                "description": "aberration correction metadata, not further defined in this metadata",
+                "$ref": "#/definitions/blobRef"
+              },
+              "modulationDataRef":
+              {
+                "description": "not further defined in this metadata",
+                "$ref": "#/definitions/blobRef"
+              },
+              "modulationDataMetadataRef":
+              {
+                "description": "not further defined in this metadata",
+                "$ref": "#/definitions/blobRef"
+              },
+              "reconstructionFilterRef":
+              {
+                "description": "not further defined in this metadata",
+                "$ref": "#/definitions/blobRef"
+              },
+              "reconstructionFilterMetadataRef":
+              {
+                "description": "not further defined in this metadata",
+                "$ref": "#/definitions/blobRef"
+              },
+              "debugMetadataRef":
+              {
+                "description": "temporary during product development, may be omitted",
+                "$ref": "#/definitions/blobRef"
+              }
+            }
+          },
+          "assignedProperties":
+          {
+            "description": "properties that are assigned after capture because they may not be known to the camera",
+            "type": "object",
+            "additionalProperties": false,
+            "properties":
+            {
+              "darkFrame":
+              {
+                "description": "no illumination reached the sensor during the capture of this frame",
+                "type": "boolean",
+                "default": false
+              },
+              "modulationFrame":
+              {
+                "description": "this frame is intended to serve as a modulation image",
+                "type": "boolean",
+                "default": false
+              }
+            }
+          },
+          "accelerations":
+          {
+            "description": "accelerations that cache frame-derived data and that do NOT depend on any view parameters",
+            "type": "array",
+            "minItems": 0,
+            "items": { "$ref": "#/definitions/frameAcceleration" }
+          }
+        }
+      }
+    },
+    "annotations":
+    {
+      "type": "array",
+      "minItems": 0,
+      "items":
+      {
+        "type": "object",
+        "additionalProperties": false,
+        "properties":
+        {
+          "starred":
+          {
+            "description": "indicates viewer interest in the picture",
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
+    "views":
+    {
+      "type": "array",
+      "minItems": 0,
+      "items":
+      {
+        "title": "view",
+        "type": "object",
+        "required": [ "accelerations" ],
+        "description": "define one additional recipe property for each future picture-processing version, e.g., recipe2",
+        "oneOf":
+        [
+          { "required": [ "recipe" ] },
+          { "required": [ "recipe2" ] },
+          { "required": [ "recipe3" ] },
+          { "required": [ "recipe4" ] }
+        ],
+        "additionalProperties": false,
+        "properties":
+        {
+          "name":
+          {
+            "description": "may be used to tag a view for a specific purpose, such as interaction or animation",
+            "type": "string"
+          },
+          "recipe":
+          {
+            "description": "initial version",
+            "$ref": "#/definitions/recipe"
+          },
+          "recipe2":
+          {
+            "description": "adds viewSaturationRed/Green/Blue/Magenta/Cyan/Yellow",
+            "$ref": "#/definitions/recipe2"
+          },
+          "recipe3":
+          {
+            "description": "new versions viewBlacks2, viewWhites2, viewShadows2, viewHighlights2, viewSharpness2; added viewSharpenDetail and viewSharpenEdgeMasking",
+            "$ref": "#/definitions/recipe3"
+          },
+          "recipe4":
+          {
+            "description": "adds viewReduceFlare, viewFocusX/Y, viewCcm, and viewDefringe et al.  reorders <parametricTone>",
+            "$ref": "#/definitions/recipe4"
+          },
+          "accelerations":
+          {
+            "description": "stores all view accelerations that implement this recipe",
+            "type": "array",
+            "minItems": 0,
+            "items": { "$ref": "#/definitions/viewAcceleration" }
+          }
+        }
+      }
+    }
+  },
+  "definitions":
+  {
+    "nonNegativeInt":
+    {
+      "type": "integer",
+      "minimum": 0
+    },
+    "positiveNumber":
+    {
+      "type": "number",
+      "minimum": 0.0,
+      "exclusiveMinimum": true
+    },
+    "positiveInt":
+    {
+      "type": "integer",
+      "minimum": 1
+    },
+    "degree":
+    {
+      "type": "number"
+    },
+    "lambda":
+    {
+      "type": "number"
+    },
+    "second":
+    {
+      "type": "number"
+    },
+    "nonNegativeSecond":
+    {
+      "allOf": [ { "$ref": "#/definitions/second" }, { "minimum": 0.0 } ]
+    },
+    "signed5":
+    {
+      "type": "number",
+      "minimum": -5.0,
+      "maximum":  5.0
+    },
+    "signedInt100":
+    {
+      "type": "integer",
+      "minimum": -100,
+      "maximum":  100
+    },
+    "signedInt150":
+    {
+      "type": "integer",
+      "minimum": -150,
+      "maximum":  150
+    },
+    "unsignedInt100":
+    {
+      "type": "integer",
+      "minimum":   0,
+      "maximum": 100
+    },
+    "unsignedInt150":
+    {
+      "type": "integer",
+      "minimum":   0,
+      "maximum": 150
+    },
+    "apertureCoord":
+    {
+      "description": "[0.0, 0.0] is center, [0.5, 0.0] is rightmost on aperture, [0.0, 0.5] is lowest on aperture.",
+      "type": "number"
+    },
+    "depthCoord":
+    {
+      "description": "depth pixel coordinate, [0.0, 0.0] is top left, [width, height] is bottom right.",
+      "type": "number"
+    },
+    "discreteDepthCoord":
+    {
+      "description": "depth pixel index, [0, 0] is top left pixel, [width-1, height-1] is bottom right pixel.",
+      "type": "integer"
+    },
+    "normalizedCoord":
+    {
+      "description": "image coordinate, [0.0, 0.0] is top left, [1.0, 1.0] is bottom right.",
+      "type": "number"
+    },
+    "pixelCoord":
+    {
+      "description": "image coordinate, [0.0, 0.0] is top left, [width, height] is bottom right.",
+      "type": "number"
+    },
+    "discretePixelCoord":
+    {
+      "description": "image index, [0, 0] is top left pixel, [width-1, height-1] is bottom right pixel.",
+      "type": "integer"
+    },
+    "sensorNormalizedCoord":
+    {
+      "description": "sensor-space normalized coordinate, SNC",
+      "$ref": "#/definitions/normalizedCoord"
+    },
+    "sensorPixelCoord":
+    {
+      "description": "sensor-space pixel coordinate, SPC",
+      "$ref": "#/definitions/pixelCoord"
+    },
+    "sensorDiscretePixelCoord":
+    {
+      "$ref": "#/definitions/discretePixelCoord"
+    },
+    "frameNormalizedCoord":
+    { 
+      "description": "frame-space normalized coordinate, FNC",
+      "$ref": "#/definitions/normalizedCoord"
+    },
+    "frameDepthCoord":
+    { 
+      "description": "frame-space depth coordinate, FDC",
+      "$ref": "#/definitions/depthCoord"
+    },
+    "frameDiscreteDepthCoord":
+    { 
+      "$ref": "#/definitions/discreteDepthCoord"
+    },
+    "frameApertureCoord":
+    {
+      "description": "frame-space aperture coordinate, FAC",
+      "$ref": "#/definitions/apertureCoord"
+    },
+    "cropNormalizedCoord":
+    {
+      "description": "crop-space normalized coordinate, CNC",
+      "$ref": "#/definitions/normalizedCoord"
+    },
+    "cropPixelCoord":
+    {
+      "description": "crop-space pixel coordinate, CPC",
+      "$ref": "#/definitions/pixelCoord"
+    },
+    "cropDiscretePixelCoord":
+    {
+      "$ref": "#/definitions/discretePixelCoord"
+    },
+    "cropDepthCoord":
+    {
+      "description": "crop-space depth coordinate, CDC",
+      "$ref": "#/definitions/depthCoord"
+    },
+    "cropDiscreteDepthCoord":
+    {
+      "$ref": "#/definitions/discreteDepthCoord"
+    },
+    "cropApertureCoord":
+    {
+      "description": "crop-space aperture coordinate, CAC",
+      "$ref": "#/definitions/apertureCoord"
+    },
+    "reorientNormalizedCoord":
+    {
+      "description": "reorient-space normalized coordinate, RNC",
+      "$ref": "#/definitions/normalizedCoord"
+    },
+    "reorientPixelCoord":
+    {
+      "description": "reorient-space pixel coordinate, RPC",
+      "$ref": "#/definitions/pixelCoord"
+    },
+    "reorientDiscretePixelCoord":
+    {
+      "$ref": "#/definitions/discretePixelCoord"
+    },
+    "reorientDepthCoord":
+    {
+      "description": "reorient-space depth coordinate, RDC",
+      "$ref": "#/definitions/depthCoord"
+    },
+    "reorientDiscreteDepthCoord":
+    {
+      "$ref": "#/definitions/discreteDepthCoord"
+    },
+    "reorientApertureCoord":
+    {
+      "description": "reorient-space aperture coordinate, RAC",
+      "$ref": "#/definitions/apertureCoord"
+    },
+    "windowNormalizedCoord":
+    {
+      "description": "window-space normalized coordinate, WNC",
+      "$ref": "#/definitions/normalizedCoord"
+    },
+    "windowPixelCoord":
+    {
+      "description": "window-space pixel coordinate, WPC",
+      "$ref": "#/definitions/pixelCoord"
+    },
+    "windowDiscretePixelCoord":
+    {
+      "$ref": "#/definitions/discretePixelCoord"
+    },
+    "windowDepthCoord":
+    {
+      "description": "window-space depth coordinate, WDC",
+      "$ref": "#/definitions/depthCoord"
+    },
+    "windowDiscreteDepthCoord":
+    {
+      "$ref": "#/definitions/discreteDepthCoord"
+    },
+    "windowApertureCoord":
+    {
+      "description": "window-space aperture coordinate, WAC",
+      "$ref": "#/definitions/apertureCoord"
+    },
+    "normalizedDegree":
+    {
+      "$ref": "#/definitions/degree"
+    },
+    "normalizedDistance":
+    {
+      "type": "number"
+    },
+    "normalizedSlope":
+    {
+      "type": "number"
+    },
+    "pixelDimension":
+    {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "discretePixelDimension":
+    {
+      "type": "integer",
+      "minimum": 0
+    },
+    "depthDimension":
+    {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "discreteDepthDimension":
+    {
+      "type": "integer",
+      "minimum": 0
+    },
+    "apertureDistance":
+    {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "sensorDiscretePixelDimension":
+    {
+      "$ref": "#/definitions/discretePixelDimension"
+    },
+    "frameNormalizedDegree":
+    {
+      "$ref": "#/definitions/normalizedDegree"
+    },
+    "frameNormalizedSlope":
+    {
+      "$ref": "#/definitions/normalizedSlope"
+    },
+    "frameDiscretePixelDimension":
+    {
+      "description": "FPC is not really defined, but dimensions in FPC are necessary for the uncropped view acceleration asset",
+      "$ref": "#/definitions/discretePixelDimension"
+    },
+    "frameDiscreteDepthDimension":
+    {
+      "$ref": "#/definitions/discretePixelDimension"
+    },
+    "cropDiscretePixelDimension":
+    {
+      "$ref": "#/definitions/discretePixelDimension"
+    },
+    "reorientDiscretePixelDimension":
+    {
+      "$ref": "#/definitions/discretePixelDimension"
+    },
+    "reorientPixelDimension":
+    {
+      "$ref": "#/definitions/pixelDimension"
+    },
+    "reorientDiscreteDepthDimension":
+    {
+      "$ref": "#/definitions/discreteDepthDimension"
+    },
+    "windowDiscretePixelDimension":
+    {
+      "$ref": "#/definitions/discretePixelDimension"
+    },
+    "windowApertureDistance":
+    {
+      "$ref": "#/definitions/apertureDistance"
+    },
+    "windowDepthDimension":
+    {
+      "$ref": "#/definitions/depthDimension"
+    },
+    "windowDiscreteDepthDimension":
+    {
+      "$ref": "#/definitions/discreteDepthDimension"
+    },
+    "blobRef":
+    {
+      "type": "string",
+      "minLength": 45,
+      "maxLength": 45,
+      "pattern": "^sha1-"
+    },
+    "url":
+    {
+      "description": "a valid URL",
+      "type": "string"
+    },
+    "path":
+    {
+      "description": "a valid unix path with file name",
+      "type": "string"
+    },
+    "pictureID":
+    {
+      "description": "a unique ID that is not reversible to its generating parameters",
+      "type": "string",
+      "minLength": 45,
+      "maxLength": 45,
+      "pattern": "^sha1-"
+    },
+    "zuluTime":
+    {
+      "description": "ISO 8601 format, e.g., 2011-03-30T18:07:25.134752Z, fraction to milliseconds or microseconds, Zulu time (no local offset)",
+      "pattern": "[1-2][0-9]{3}-[01][0-9]-[0123][0-9]T[012][0-9]:[0-5][0-9]:[0-5][0-9]\\.[0-9]{3,6}Z",
+      "type": "string"
+    },
+    "exifOrientation":
+    {
+      "description": "standard EXIF rotations and reflections",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 8
+    },
+    "colorSpace":
+    {
+      "enum": [ "cRGB", "sRGB", "adobeRGB", "proPhotoRGB" ]
+    },
+    "imageRepresentation":
+    {
+      "description": "standard encodings; the internal dimensions and color-space should match those in this metadata",
+      "enum": [ "jpeg", "png", "tiff", "exr" ]
+    },
+    "recipe":
+    {
+      "description": "all except zuluTime specify picture-processing parameters",
+      "type": "object",
+      "dependencies":
+      {
+        "viewTiltX":                            [ "viewTiltY"                   ],
+        "viewTiltY":                            [ "viewTiltX"                   ],
+        "viewPerspectiveU":                     [ "viewPerspectiveV"            ],
+        "viewPerspectiveV":                     [ "viewPerspectiveU"            ],
+        "viewPanX":                             [ "viewPanY"                    ],
+        "viewPanY":                             [ "viewPanX"                    ]
+      },
+      "additionalProperties": false,
+      "properties":
+      {
+        "zuluTime":
+        {
+          "description": "time stamp for the last modification to this recipe",
+          "$ref": "#/definitions/zuluTime"
+        },
+        "viewPriorities":
+        {
+          "description": "priorities, in decreasing order, for players that cannot completely honor the recipe",
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": { "enum": [ "viewFocus", "viewPerspective" ] },
+          "default": [ "viewFocus" ]
+        },
+        "viewCrop":
+        {
+          "description": "<4D-to-2D>, corresponds to crs:HasCrop",
+          "type": "object",
+          "required": [ "angle", "top", "left", "bottom", "right" ],
+           "additionalProperties": false,
+          "properties":
+          {
+            "angle":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropAngle",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedDegree" },
+                { "minimum": -45.0 },
+                { "maximum":  45.0 },
+                { "default":   0.0 }
+              ]
+            },
+            "top":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropTop",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedCoord" },
+                { "default": 0.0 }
+              ]
+            },
+            "left":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropLeft",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedCoord" },
+                { "default": 0.0 }
+              ]
+            },
+            "bottom":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropBottom",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedCoord" },
+                { "default": 1.0 }
+              ]
+            },
+            "right":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropRight",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedCoord" },
+                { "default": 1.0 }
+              ]
+            }
+          }
+        },
+        "viewWhiteBalance":
+        {
+          "description": "<white-balance>, corresponds to crs:WhiteBalance",
+          "enum":
+          [
+            "as shot",
+            "auto",
+            "daylight",
+            "cloudy",
+            "shade",
+            "tungsten",
+            "fluorescent",
+            "flash",
+            "custom"
+          ],
+          "default": "auto"
+        },
+        "viewLuminanceToneCurve":
+        {
+          "description": "<contrast>",
+          "type": "object",
+          "required": [ "controlPoints" ],
+          "additionalProperties": false,
+          "properties":
+          {
+            "controlPoints":
+            {
+              "type": "array",
+              "minItems": 2,
+              "items":
+              {
+                "title": "control point",
+                "type": "object",
+                "required": [ "x", "y" ],
+                "additionalProperties": false,
+                "properties":
+                {
+                  "x": { "type": "number" },
+                  "y": { "type": "number" }
+                }
+              }
+            }
+          },
+          "default":
+          [
+            { "x": 0.0, "y": 0.0 },
+            { "x": 1.0, "y": 1.0 }
+          ]
+        },
+        "viewOrientation":
+        {
+          "description": "<reorient>",
+          "allOf":
+          [
+            { "$ref": "#/definitions/exifOrientation" },
+            { "default": 1 }
+          ]
+        },
+        "viewFilterEffect":
+        {
+          "description": "<effect>, Lytro-specific living filters, no correspondence to crs",
+          "enum":
+          [
+            "none",
+            "Mosaic",
+            "Glass",
+            "Carnival",
+            "Line Art",
+            "Crayon",
+            "Blur+",
+            "Pop",
+            "Film Noir",
+            "8-Track"
+           ],
+           "default": "none"
+        },
+        "viewFocus":
+        {
+          "description": "<4D-to-2D>, depth of focal plane at FNC [0.5, 0.5]",
+          "allOf":
+          [
+            { "$ref": "#/definitions/lambda" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewTiltX":
+        {
+          "description": "<4D-to-2D>, signed change in lambda from left to right image edges, in FNC",
+          "allOf":
+          [
+            { "$ref": "#/definitions/frameNormalizedSlope" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewTiltY":
+        {
+          "description": "<4D-to-2D>, signed change in lambda from top to bottom image edges, in FNC",
+          "allOf":
+          [
+            { "$ref": "#/definitions/frameNormalizedSlope" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewAperture":
+        {
+          "description": "<4D-to-2D>, image depth of field, specified as normalized aperture diameter",
+          "allOf":
+          [
+            { "type": "number" },
+            { "default": 1.0 }
+          ]
+        },
+        "viewFocusSpread":
+        {
+          "description": "<4D-to-2D>, spread image depth of field, specified as lambda added both near and far",
+          "allOf":
+          [
+            { "$ref": "#/definitions/lambda" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewPerspectiveU":
+        {
+          "description": "<4D-to-2D>, center-of-perspective u coordinate",
+          "allOf":
+          [
+            { "$ref": "#/definitions/windowApertureCoord" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewPerspectiveV":
+        {
+          "description": "<4D-to-2D>, center-of-perspective v coordinate",
+          "allOf":
+          [
+            { "$ref": "#/definitions/windowApertureCoord" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewPivot":
+        {
+          "description": "<4D-to-2D>, distance at which objects are stationary under perspective change (non-stereo)",
+          "allOf":
+          [
+            { "$ref": "#/definitions/lambda" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewStereoPivot":
+        {
+          "description": "<4D-to-2D>, distance at which objects are stationary under perspective change (stereo)",
+          "allOf":
+          [
+            { "$ref": "#/definitions/lambda" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewStereoBaseline":
+        {
+          "description": "<4D-to-2D>, full length of stereo baseline",
+          "allOf":
+          [
+            { "$ref": "#/definitions/windowApertureDistance" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewExposure":
+        {
+          "description": "<exposure>, corresponds to crs:Exposure2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signed5" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewTemperature":
+        {
+          "description": "<white-balance>, corresponds to crs:Temp; if not specified, value is estimated during processing, so there is no default",
+          "type": "integer",
+          "minimum":  2000,
+          "maximum": 50000
+        },
+        "viewTint":
+        {
+          "description": "<white-balance>, corresponds to crs:Tint",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt150" },
+            { "default": 0 }
+          ]
+        },
+        "viewBlacks":
+        {
+          "description": "<basicTone>, corresponds to crs:Blacks2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewWhites":
+        {
+          "description": "<basicTone>, corresponds to crs:Whites2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewShadows":
+        {
+          "description": "<basicTone>, corresponds to crs:Shadows2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewHighlights":
+        {
+          "description": "<basicTone>, corresponds to crs:Highlights2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewLuminanceNoiseReduction":
+        {
+          "description": "<2D-denoise>, corresponds to crs:LuminanceSmoothing",
+          "allOf":
+          [
+            { "$ref": "#/definitions/unsignedInt100" },
+            { "default": 50 }
+          ]
+        },
+        "viewColorNoiseReduction":
+        {
+          "description": "<2D-denoise>, corresponds to crs:ColorNoiseReduction",
+          "allOf":
+          [
+            { "$ref": "#/definitions/unsignedInt100" },
+            { "default": 50 }
+          ]
+        },
+        "viewParametricShadows":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricShadows",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewParametricDarks":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricDarks",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewParametricLights":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricLights",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewParametricHighlights":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricHighlights",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewParametricShadowSplit":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricShadowSplit",
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 70
+        },
+        "viewParametricMidtoneSplit":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricMidtoneSplit",
+          "type": "integer",
+          "minimum": 20,
+          "maximum": 80
+        },
+        "viewParametricHighlightSplit":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricHighlightSplit",
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 90
+        },
+        "viewSharpness":
+        {
+          "description": "<sharpen>, corresponds to crs:Sharpness",
+          "allOf":
+          [
+            { "$ref": "#/definitions/unsignedInt150" },
+            { "default": 25 }
+          ]
+        },
+        "viewSharpenRadius":
+        {
+          "description": "<sharpen>, corresponds to crs:SharpenRadius",
+          "allOf":
+          [
+            { "type": "number" },
+            { "default": 1.0 }
+          ]
+        },
+        "viewContrast":
+        {
+          "description": "<contrast>, corresponds to crs:Contrast2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturation":
+        {
+          "description": "<saturate>, corresponds to crs:Saturation",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewVibrance":
+        {
+          "description": "<saturate>, corresponds to crs:Vibrance",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewPanX":
+        {
+          "description": "<window>, position in RNC of the center of the window",
+          "allOf":
+          [
+            { "$ref": "#/definitions/reorientNormalizedCoord" },
+            { "default": 0.5 }
+          ]
+        },
+        "viewPanY":
+        {
+          "description": "<window>, position in RNC of the center of the window",
+          "allOf":
+          [
+            { "$ref": "#/definitions/reorientNormalizedCoord" },
+            { "default": 0.5 }
+          ]
+        },
+        "viewZoom":
+        {
+          "description": "<window>, scale factor from RNC to WNC",
+          "type": "number",
+          "default": 1.0
+        },
+        "viewFocusAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewTiltXAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewTiltYAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewApertureAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewFocusSpreadAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPerspectiveUAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPerspectiveVAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPivotAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewStereoPivotAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewStereoBaselineAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewExposureAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewTemperatureAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewTintAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewBlacksAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewWhitesAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewShadowsAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewHighlightsAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewLuminanceNoiseReductionAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewColorNoiseReductionAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSharpnessAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSharpenRadiusAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewContrastAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewVibranceAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPanXAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPanYAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewZoomAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        }
+      }
+    },
+    "recipe2":
+    {
+      "type": "object",
+      "dependencies":
+      {
+        "viewTiltX":                            [ "viewTiltY"                   ],
+        "viewTiltY":                            [ "viewTiltX"                   ],
+        "viewPerspectiveU":                     [ "viewPerspectiveV"            ],
+        "viewPerspectiveV":                     [ "viewPerspectiveU"            ],
+        "viewPanX":                             [ "viewPanY"                    ],
+        "viewPanY":                             [ "viewPanX"                    ]
+      },
+      "additionalProperties": false,
+      "properties":
+      {
+        "zuluTime":
+        {
+          "description": "time stamp for the last modification to this recipe",
+          "$ref": "#/definitions/zuluTime"
+        },
+        "viewPriorities":
+        {
+          "description": "priorities, in decreasing order, for players that cannot completely honor the recipe",
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": { "enum": [ "viewFocus", "viewPerspective" ] },
+          "default": [ "viewFocus" ]
+        },
+        "viewCrop":
+        {
+          "description": "<4D-to-2D>, corresponds to crs:HasCrop",
+          "type": "object",
+          "required": [ "angle", "top", "left", "bottom", "right" ],
+           "additionalProperties": false,
+          "properties":
+          {
+            "angle":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropAngle",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedDegree" },
+                { "minimum": -45.0 },
+                { "maximum":  45.0 },
+                { "default":   0.0 }
+              ]
+            },
+            "top":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropTop",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedCoord" },
+                { "default": 0.0 }
+              ]
+            },
+            "left":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropLeft",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedCoord" },
+                { "default": 0.0 }
+              ]
+            },
+            "bottom":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropBottom",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedCoord" },
+                { "default": 1.0 }
+              ]
+            },
+            "right":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropRight",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedCoord" },
+                { "default": 1.0 }
+              ]
+            }
+          }
+        },
+        "viewWhiteBalance":
+        {
+          "description": "<white-balance>, corresponds to crs:WhiteBalance",
+          "enum":
+          [
+            "as shot",
+            "auto",
+            "daylight",
+            "cloudy",
+            "shade",
+            "tungsten",
+            "fluorescent",
+            "flash",
+            "custom"
+          ],
+          "default": "auto"
+        },
+        "viewLuminanceToneCurve":
+        {
+          "description": "<contrast>",
+          "type": "object",
+          "required": [ "controlPoints" ],
+          "additionalProperties": false,
+          "properties":
+          {
+            "controlPoints":
+            {
+              "type": "array",
+              "minItems": 2,
+              "items":
+              {
+                "title": "control point",
+                "type": "object",
+                "required": [ "x", "y" ],
+                "additionalProperties": false,
+                "properties":
+                {
+                  "x": { "type": "number" },
+                  "y": { "type": "number" }
+                }
+              }
+            }
+          },
+          "default":
+          [
+            { "x": 0.0, "y": 0.0 },
+            { "x": 1.0, "y": 1.0 }
+          ]
+        },
+        "viewOrientation":
+        {
+          "description": "<reorient>",
+          "allOf":
+          [
+            { "$ref": "#/definitions/exifOrientation" },
+            { "default": 1 }
+          ]
+        },
+        "viewFilterEffect":
+        {
+          "description": "<effect>, Lytro-specific living filters, no correspondence to crs",
+          "enum":
+          [
+            "none",
+            "Mosaic",
+            "Glass",
+            "Carnival",
+            "Line Art",
+            "Crayon",
+            "Blur+",
+            "Pop",
+            "Film Noir",
+            "8-Track"
+           ],
+           "default": "none"
+        },
+        "viewFocus":
+        {
+          "description": "<4D-to-2D>, depth of focal plane at FNC [0.5, 0.5]",
+          "allOf":
+          [
+            { "$ref": "#/definitions/lambda" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewTiltX":
+        {
+          "description": "<4D-to-2D>, signed change in lambda from left to right image edges, in FNC",
+          "allOf":
+          [
+            { "$ref": "#/definitions/frameNormalizedSlope" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewTiltY":
+        {
+          "description": "<4D-to-2D>, signed change in lambda from top to bottom image edges, in FNC",
+          "allOf":
+          [
+            { "$ref": "#/definitions/frameNormalizedSlope" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewAperture":
+        {
+          "description": "<4D-to-2D>, image depth of field, specified as normalized aperture diameter",
+          "allOf":
+          [
+            { "type": "number" },
+            { "default": 1.0 }
+          ]
+        },
+        "viewFocusSpread":
+        {
+          "description": "<4D-to-2D>, spread image depth of field, specified as lambda added both near and far",
+          "allOf":
+          [
+            { "$ref": "#/definitions/lambda" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewPerspectiveU":
+        {
+          "description": "<4D-to-2D>, center-of-perspective u coordinate",
+          "allOf":
+          [
+            { "$ref": "#/definitions/windowApertureCoord" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewPerspectiveV":
+        {
+          "description": "<4D-to-2D>, center-of-perspective v coordinate",
+          "allOf":
+          [
+            { "$ref": "#/definitions/windowApertureCoord" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewPivot":
+        {
+          "description": "<4D-to-2D>, distance at which objects are stationary under perspective change (non-stereo)",
+          "allOf":
+          [
+            { "$ref": "#/definitions/lambda" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewStereoPivot":
+        {
+          "description": "<4D-to-2D>, distance at which objects are stationary under perspective change (stereo)",
+          "allOf":
+          [
+            { "$ref": "#/definitions/lambda" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewStereoBaseline":
+        {
+          "description": "<4D-to-2D>, full length of stereo baseline",
+          "allOf":
+          [
+            { "$ref": "#/definitions/windowApertureDistance" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewExposure":
+        {
+          "description": "<exposure>, corresponds to crs:Exposure2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signed5" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewTemperature":
+        {
+          "description": "<white-balance>, corresponds to crs:Temp; if not specified, value is estimated during processing, so there is no default",
+          "type": "integer",
+          "minimum":  2000,
+          "maximum": 50000
+        },
+        "viewTint":
+        {
+          "description": "<white-balance>, corresponds to crs:Tint",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt150" },
+            { "default": 0 }
+          ]
+        },
+        "viewBlacks":
+        {
+          "description": "<basicTone>, corresponds to crs:Blacks2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewWhites":
+        {
+          "description": "<basicTone>, corresponds to crs:Whites2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewShadows":
+        {
+          "description": "<basicTone>, corresponds to crs:Shadows2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewHighlights":
+        {
+          "description": "<basicTone>, corresponds to crs:Highlights2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewLuminanceNoiseReduction":
+        {
+          "description": "<2D-denoise>, corresponds to crs:LuminanceSmoothing",
+          "allOf":
+          [
+            { "$ref": "#/definitions/unsignedInt100" },
+            { "default": 50 }
+          ]
+        },
+        "viewColorNoiseReduction":
+        {
+          "description": "<2D-denoise>, corresponds to crs:ColorNoiseReduction",
+          "allOf":
+          [
+            { "$ref": "#/definitions/unsignedInt100" },
+            { "default": 50 }
+          ]
+        },
+        "viewParametricShadows":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricShadows",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewParametricDarks":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricDarks",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewParametricLights":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricLights",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewParametricHighlights":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricHighlights",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewParametricShadowSplit":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricShadowSplit",
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 70
+        },
+        "viewParametricMidtoneSplit":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricMidtoneSplit",
+          "type": "integer",
+          "minimum": 20,
+          "maximum": 80
+        },
+        "viewParametricHighlightSplit":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricHighlightSplit",
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 90
+        },
+        "viewSharpness":
+        {
+          "description": "<sharpen>, corresponds to crs:Sharpness",
+          "allOf":
+          [
+            { "$ref": "#/definitions/unsignedInt150" },
+            { "default": 25 }
+          ]
+        },
+        "viewSharpenRadius":
+        {
+          "description": "<sharpen>, corresponds to crs:SharpenRadius",
+          "allOf":
+          [
+            { "type": "number" },
+            { "default": 1.0 }
+          ]
+        },
+        "viewContrast":
+        {
+          "description": "<contrast>, corresponds to crs:Contrast2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturation":
+        {
+          "description": "<saturate>, corresponds to crs:Saturation",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturationRed":
+        {
+          "description": "<saturate>, corresponds to crs:SaturationAdjustmentRed",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturationGreen":
+        {
+          "description": "<saturate>, corresponds to crs:SaturationAdjustmentGreen",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturationBlue":
+        {
+          "description": "<saturate>, corresponds to crs:SaturationAdjustmentBlue",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturationMagenta":
+        {
+          "description": "<saturate>, corresponds to crs:SaturationAdjustmentMagenta",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturationCyan":
+        {
+          "description": "<saturate>, XXX there is no direct crs correspondence.  Candidates include Orange, Aqua, and Purple",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturationYellow":
+        {
+          "description": "<saturate>, corresponds to crs:SaturationAdjustmentYellow",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewVibrance":
+        {
+          "description": "<saturate>, corresponds to crs:Vibrance",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewPanX":
+        {
+          "description": "<window>, position in RNC of the center of the window",
+          "allOf":
+          [
+            { "$ref": "#/definitions/reorientNormalizedCoord" },
+            { "default": 0.5 }
+          ]
+        },
+        "viewPanY":
+        {
+          "description": "<window>, position in RNC of the center of the window",
+          "allOf":
+          [
+            { "$ref": "#/definitions/reorientNormalizedCoord" },
+            { "default": 0.5 }
+          ]
+        },
+        "viewZoom":
+        {
+          "description": "<window>, scale factor from RNC to WNC",
+          "type": "number",
+          "default": 1.0
+        },
+        "viewFocusAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewTiltXAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewTiltYAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewApertureAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewFocusSpreadAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPerspectiveUAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPerspectiveVAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPivotAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewStereoPivotAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewStereoBaselineAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewExposureAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewTemperatureAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewTintAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewBlacksAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewWhitesAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewShadowsAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewHighlightsAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewLuminanceNoiseReductionAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewColorNoiseReductionAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSharpnessAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSharpenRadiusAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewContrastAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationRedAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationGreenAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationBlueAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationMagentaAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationCyanAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationYellowAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewVibranceAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPanXAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPanYAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewZoomAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        }
+      }
+    },
+    "recipe3":
+    {
+      "type": "object",
+      "dependencies":
+      {
+        "viewTiltX":                            [ "viewTiltY"                   ],
+        "viewTiltY":                            [ "viewTiltX"                   ],
+        "viewPerspectiveU":                     [ "viewPerspectiveV"            ],
+        "viewPerspectiveV":                     [ "viewPerspectiveU"            ],
+        "viewPanX":                             [ "viewPanY"                    ],
+        "viewPanY":                             [ "viewPanX"                    ]
+      },
+      "additionalProperties": false,
+      "properties":
+      {
+        "zuluTime":
+        {
+          "description": "time stamp for the last modification to this recipe",
+          "$ref": "#/definitions/zuluTime"
+        },
+        "viewPriorities":
+        {
+          "description": "priorities, in decreasing order, for players that cannot completely honor the recipe",
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": { "enum": [ "viewFocus", "viewPerspective" ] },
+          "default": [ "viewFocus" ]
+        },
+        "viewCrop":
+        {
+          "description": "<4D-to-2D>, corresponds to crs:HasCrop",
+          "type": "object",
+          "required": [ "angle", "top", "left", "bottom", "right" ],
+           "additionalProperties": false,
+          "properties":
+          {
+            "angle":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropAngle",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedDegree" },
+                { "minimum": -45.0 },
+                { "maximum":  45.0 },
+                { "default":   0.0 }
+              ]
+            },
+            "top":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropTop",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedCoord" },
+                { "default": 0.0 }
+              ]
+            },
+            "left":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropLeft",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedCoord" },
+                { "default": 0.0 }
+              ]
+            },
+            "bottom":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropBottom",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedCoord" },
+                { "default": 1.0 }
+              ]
+            },
+            "right":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropRight",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedCoord" },
+                { "default": 1.0 }
+              ]
+            }
+          }
+        },
+        "viewWhiteBalance":
+        {
+          "description": "<white-balance>, corresponds to crs:WhiteBalance",
+          "enum":
+          [
+            "as shot",
+            "auto",
+            "daylight",
+            "cloudy",
+            "shade",
+            "tungsten",
+            "fluorescent",
+            "flash",
+            "custom"
+          ],
+          "default": "auto"
+        },
+        "viewLuminanceToneCurve":
+        {
+          "description": "<contrast>",
+          "type": "object",
+          "required": [ "controlPoints" ],
+          "additionalProperties": false,
+          "properties":
+          {
+            "controlPoints":
+            {
+              "type": "array",
+              "minItems": 2,
+              "items":
+              {
+                "title": "control point",
+                "type": "object",
+                "required": [ "x", "y" ],
+                "additionalProperties": false,
+                "properties":
+                {
+                  "x": { "type": "number" },
+                  "y": { "type": "number" }
+                }
+              }
+            }
+          },
+          "default":
+          [
+            { "x": 0.0, "y": 0.0 },
+            { "x": 1.0, "y": 1.0 }
+          ]
+        },
+        "viewOrientation":
+        {
+          "description": "<reorient>",
+          "allOf":
+          [
+            { "$ref": "#/definitions/exifOrientation" },
+            { "default": 1 }
+          ]
+        },
+        "viewFilterEffect":
+        {
+          "description": "<effect>, Lytro-specific living filters, no correspondence to crs",
+          "enum":
+          [
+            "none",
+            "Mosaic",
+            "Glass",
+            "Carnival",
+            "Line Art",
+            "Crayon",
+            "Blur+",
+            "Pop",
+            "Film Noir",
+            "8-Track"
+           ],
+           "default": "none"
+        },
+        "viewFocus":
+        {
+          "description": "<4D-to-2D>, depth of focal plane at FNC [0.5, 0.5]",
+          "allOf":
+          [
+            { "$ref": "#/definitions/lambda" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewTiltX":
+        {
+          "description": "<4D-to-2D>, signed change in lambda from left to right image edges, in FNC",
+          "allOf":
+          [
+            { "$ref": "#/definitions/frameNormalizedSlope" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewTiltY":
+        {
+          "description": "<4D-to-2D>, signed change in lambda from top to bottom image edges, in FNC",
+          "allOf":
+          [
+            { "$ref": "#/definitions/frameNormalizedSlope" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewAperture":
+        {
+          "description": "<4D-to-2D>, image depth of field, specified as normalized aperture diameter",
+          "allOf":
+          [
+            { "type": "number" },
+            { "default": 1.0 }
+          ]
+        },
+        "viewFocusSpread":
+        {
+          "description": "<4D-to-2D>, spread image depth of field, specified as lambda added both near and far",
+          "allOf":
+          [
+            { "$ref": "#/definitions/lambda" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewPerspectiveU":
+        {
+          "description": "<4D-to-2D>, center-of-perspective u coordinate",
+          "allOf":
+          [
+            { "$ref": "#/definitions/windowApertureCoord" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewPerspectiveV":
+        {
+          "description": "<4D-to-2D>, center-of-perspective v coordinate",
+          "allOf":
+          [
+            { "$ref": "#/definitions/windowApertureCoord" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewPivot":
+        {
+          "description": "<4D-to-2D>, distance at which objects are stationary under perspective change (non-stereo)",
+          "allOf":
+          [
+            { "$ref": "#/definitions/lambda" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewStereoPivot":
+        {
+          "description": "<4D-to-2D>, distance at which objects are stationary under perspective change (stereo)",
+          "allOf":
+          [
+            { "$ref": "#/definitions/lambda" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewStereoBaseline":
+        {
+          "description": "<4D-to-2D>, full length of stereo baseline",
+          "allOf":
+          [
+            { "$ref": "#/definitions/windowApertureDistance" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewExposure":
+        {
+          "description": "<exposure>, corresponds to crs:Exposure2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signed5" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewTemperature":
+        {
+          "description": "<white-balance>, corresponds to crs:Temp; if not specified, value is estimated during processing, so there is no default",
+          "type": "integer",
+          "minimum":  2000,
+          "maximum": 50000
+        },
+        "viewTint":
+        {
+          "description": "<white-balance>, corresponds to crs:Tint",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt150" },
+            { "default": 0 }
+          ]
+        },
+        "viewBlacks2":
+        {
+          "description": "<basicTone>, corresponds to crs:Blacks2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewWhites2":
+        {
+          "description": "<basicTone>, corresponds to crs:Whites2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewShadows2":
+        {
+          "description": "<basicTone>, corresponds to crs:Shadows2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewHighlights2":
+        {
+          "description": "<basicTone>, corresponds to crs:Highlights2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewLuminanceNoiseReduction":
+        {
+          "description": "<2D-denoise>, corresponds to crs:LuminanceSmoothing",
+          "allOf":
+          [
+            { "$ref": "#/definitions/unsignedInt100" },
+            { "default": 50 }
+          ]
+        },
+        "viewColorNoiseReduction":
+        {
+          "description": "<2D-denoise>, corresponds to crs:ColorNoiseReduction",
+          "allOf":
+          [
+            { "$ref": "#/definitions/unsignedInt100" },
+            { "default": 50 }
+          ]
+        },
+        "viewParametricShadows":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricShadows",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewParametricDarks":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricDarks",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewParametricLights":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricLights",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewParametricHighlights":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricHighlights",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewParametricShadowSplit":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricShadowSplit",
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 70
+        },
+        "viewParametricMidtoneSplit":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricMidtoneSplit",
+          "type": "integer",
+          "minimum": 20,
+          "maximum": 80
+        },
+        "viewParametricHighlightSplit":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricHighlightSplit",
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 90
+        },
+        "viewSharpness2":
+        {
+          "description": "<sharpen>, corresponds to crs:Sharpness",
+          "allOf":
+          [
+            { "$ref": "#/definitions/unsignedInt150" },
+            { "default": 25 }
+          ]
+        },
+        "viewSharpenRadius":
+        {
+          "description": "<sharpen>, corresponds to crs:SharpenRadius",
+          "allOf":
+          [
+            { "type": "number" },
+            { "default": 1.0 }
+          ]
+        },
+        "viewSharpenDetail":
+        {
+          "description": "<sharpen>, corresponds to crs:SharpenDetail",
+          "allOf":
+          [
+            { "$ref": "#/definitions/unsignedInt100" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewSharpenEdgeMasking":
+        {
+          "description": "<sharpen>, corresponds to crs:SharpenEdgeMasking",
+          "allOf":
+          [
+            { "$ref": "#/definitions/unsignedInt100" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewContrast":
+        {
+          "description": "<contrast>, corresponds to crs:Contrast2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturation":
+        {
+          "description": "<saturate>, corresponds to crs:Saturation",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturationRed":
+        {
+          "description": "<saturate>, corresponds to crs:SaturationAdjustmentRed",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturationGreen":
+        {
+          "description": "<saturate>, corresponds to crs:SaturationAdjustmentGreen",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturationBlue":
+        {
+          "description": "<saturate>, corresponds to crs:SaturationAdjustmentBlue",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturationMagenta":
+        {
+          "description": "<saturate>, corresponds to crs:SaturationAdjustmentMagenta",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturationCyan":
+        {
+          "description": "<saturate>, XXX there is no direct crs correspondence.  Candidates include Orange, Aqua, and Purple",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturationYellow":
+        {
+          "description": "<saturate>, corresponds to crs:SaturationAdjustmentYellow",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewVibrance":
+        {
+          "description": "<saturate>, corresponds to crs:Vibrance",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewPanX":
+        {
+          "description": "<window>, position in RNC of the center of the window",
+          "allOf":
+          [
+            { "$ref": "#/definitions/reorientNormalizedCoord" },
+            { "default": 0.5 }
+          ]
+        },
+        "viewPanY":
+        {
+          "description": "<window>, position in RNC of the center of the window",
+          "allOf":
+          [
+            { "$ref": "#/definitions/reorientNormalizedCoord" },
+            { "default": 0.5 }
+          ]
+        },
+        "viewZoom":
+        {
+          "description": "<window>, scale factor from RNC to WNC",
+          "type": "number",
+          "default": 1.0
+        },
+        "viewFocusAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewTiltXAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewTiltYAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewApertureAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewFocusSpreadAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPerspectiveUAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPerspectiveVAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPivotAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewStereoPivotAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewStereoBaselineAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewExposureAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewTemperatureAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewTintAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewBlacks2Animation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewWhites2Animation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewShadows2Animation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewHighlights2Animation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewLuminanceNoiseReductionAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewColorNoiseReductionAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSharpness2Animation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSharpenRadiusAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSharpenDetailAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSharpenEdgeMaskingAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewContrastAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationRedAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationGreenAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationBlueAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationMagentaAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationCyanAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationYellowAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewVibranceAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPanXAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPanYAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewZoomAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        }
+      }
+    },
+    "recipe4":
+    {
+      "type": "object",
+      "dependencies":
+      {
+        "viewFocusX":       [ "viewFocusY"       ],
+        "viewFocusY":       [ "viewFocusX"       ],
+        "viewTiltX":        [ "viewTiltY"        ],
+        "viewTiltY":        [ "viewTiltX"        ],
+        "viewPerspectiveU": [ "viewPerspectiveV" ],
+        "viewPerspectiveV": [ "viewPerspectiveU" ],
+        "viewPanX":         [ "viewPanY"         ],
+        "viewPanY":         [ "viewPanX"         ]
+      },
+      "additionalProperties": false,
+      "properties":
+      {
+        "zuluTime":
+        {
+          "description": "time stamp for the last modification to this recipe",
+          "$ref": "#/definitions/zuluTime"
+        },
+        "viewPriorities":
+        {
+          "description": "priorities, in decreasing order, for players that cannot completely honor the recipe",
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": { "enum": [ "viewFocus", "viewPerspective" ] },
+          "default": [ "viewFocus" ]
+        },
+        "viewReduceFlare":
+        {
+          "description": "<4D-image>",
+          "type": "boolean",
+          "default": false
+        },
+        "viewCrop":
+        {
+          "description": "<4D-to-2D>, corresponds to crs:HasCrop",
+          "type": "object",
+          "required": [ "angle", "top", "left", "bottom", "right" ],
+           "additionalProperties": false,
+          "properties":
+          {
+            "angle":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropAngle",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedDegree" },
+                { "minimum": -45.0 },
+                { "default":   0.0 }
+              ]
+            },
+            "top":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropTop",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedCoord" },
+                { "default": 0.0 }
+              ]
+            },
+            "left":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropLeft",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedCoord" },
+                { "default": 0.0 }
+              ]
+            },
+            "bottom":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropBottom",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedCoord" },
+                { "default": 1.0 }
+              ]
+            },
+            "right":
+            {
+              "description": "<4D-to-2D>, corresponds to crs:CropRight",
+              "allOf":
+              [
+                { "$ref": "#/definitions/frameNormalizedCoord" },
+                { "default": 1.0 }
+              ]
+            }
+          }
+        },
+        "viewWhiteBalance":
+        {
+          "description": "<white-balance>, corresponds to crs:WhiteBalance",
+          "enum":
+          [
+            "as shot",
+            "auto",
+            "daylight",
+            "cloudy",
+            "shade",
+            "tungsten",
+            "fluorescent",
+            "flash",
+            "custom"
+          ],
+          "default": "auto"
+        },
+        "viewLuminanceToneCurve":
+        {
+          "description": "<contrast>",
+          "type": "object",
+          "required": [ "controlPoints" ],
+          "additionalProperties": false,
+          "properties":
+          {
+            "controlPoints":
+            {
+              "type": "array",
+              "minItems": 2,
+              "items":
+              {
+                "title": "control point",
+                "type": "object",
+                "required": [ "x", "y" ],
+                "additionalProperties": false,
+                "properties":
+                {
+                  "x": { "type": "number" },
+                  "y": { "type": "number" }
+                }
+              }
+            }
+          },
+          "default":
+          [
+            { "x": 0.0, "y": 0.0 },
+            { "x": 1.0, "y": 1.0 }
+          ]
+        },
+        "viewOrientation":
+        {
+          "description": "<reorient>",
+          "allOf":
+          [
+            { "$ref": "#/definitions/exifOrientation" },
+            { "default": 1 }
+          ]
+        },
+        "viewFilterEffect":
+        {
+          "description": "<effect>, Lytro-specific living filters, no correspondence to crs",
+          "enum":
+          [
+            "none",
+            "Mosaic",
+            "Glass",
+            "Carnival",
+            "Line Art",
+            "Crayon",
+            "Blur+",
+            "Pop",
+            "Film Noir",
+            "8-Track"
+           ],
+           "default": "none"
+        },
+        "viewFocus":
+        {
+          "description": "<4D-to-2D>, depth of focal plane at [viewFocusX, viewFocusY]",
+          "allOf":
+          [
+            { "$ref": "#/definitions/lambda" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewFocusX":
+        {
+          "description": "<4D-to-2D>, x coordinate in FNC of the location for which viewFocus is specified",
+          "allOf":
+          [
+            { "$ref": "#/definitions/frameNormalizedCoord" },
+            { "default": 0.5 }
+          ]
+        },
+        "viewFocusY":
+        {
+          "description": "<4D-to-2D>, y coordinate in FNC of the location for which viewFocus is specified",
+          "allOf":
+          [
+            { "$ref": "#/definitions/frameNormalizedCoord" },
+            { "default": 0.5 }
+          ]
+        },
+        "viewTiltX":
+        {
+          "description": "<4D-to-2D>, signed change in lambda from left to right image edges, in FNC",
+          "allOf":
+          [
+            { "$ref": "#/definitions/frameNormalizedSlope" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewTiltY":
+        {
+          "description": "<4D-to-2D>, signed change in lambda from top to bottom image edges, in FNC",
+          "allOf":
+          [
+            { "$ref": "#/definitions/frameNormalizedSlope" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewAperture":
+        {
+          "description": "<4D-to-2D>, image depth of field, specified as normalized aperture diameter",
+          "allOf":
+          [
+            { "type": "number" },
+            { "default": 1.0 }
+          ]
+        },
+        "viewFocusSpread":
+        {
+          "description": "<4D-to-2D>, spread image depth of field, specified as lambda added both near and far",
+          "allOf":
+          [
+            { "$ref": "#/definitions/lambda" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewPerspectiveU":
+        {
+          "description": "<4D-to-2D>, center-of-perspective u coordinate",
+          "allOf":
+          [
+            { "$ref": "#/definitions/windowApertureCoord" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewPerspectiveV":
+        {
+          "description": "<4D-to-2D>, center-of-perspective v coordinate",
+          "allOf":
+          [
+            { "$ref": "#/definitions/windowApertureCoord" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewPivot":
+        {
+          "description": "<4D-to-2D>, distance at which objects are stationary under perspective change (non-stereo)",
+          "allOf":
+          [
+            { "$ref": "#/definitions/lambda" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewStereoPivot":
+        {
+          "description": "<4D-to-2D>, distance at which objects are stationary under perspective change (stereo)",
+          "allOf":
+          [
+            { "$ref": "#/definitions/lambda" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewStereoBaseline":
+        {
+          "description": "<4D-to-2D>, full length of stereo baseline",
+          "allOf":
+          [
+            { "$ref": "#/definitions/windowApertureDistance" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewExposure":
+        {
+          "description": "<exposure>, corresponds to crs:Exposure2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signed5" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewTemperature":
+        {
+          "description": "<white-balance>, corresponds to crs:Temp; if not specified, value is estimated during processing, so there is no default",
+          "type": "integer",
+          "minimum":  2000,
+          "maximum": 50000
+        },
+        "viewTint":
+        {
+          "description": "<white-balance>, corresponds to crs:Tint",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt150" },
+            { "default": 0 }
+          ]
+        },
+        "viewCcm":
+        {
+          "description": "<ccm>, row major; if not specified, a system-computed ccm is used",
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9,
+          "items":
+          {
+            "type": "number"
+          }
+        },
+        "viewBlacks2":
+        {
+          "description": "<basicTone>, corresponds to crs:Blacks2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewWhites2":
+        {
+          "description": "<basicTone>, corresponds to crs:Whites2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewShadows2":
+        {
+          "description": "<basicTone>, corresponds to crs:Shadows2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewHighlights2":
+        {
+          "description": "<basicTone>, corresponds to crs:Highlights2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewLuminanceNoiseReduction":
+        {
+          "description": "<2D-denoise>, corresponds to crs:LuminanceSmoothing",
+          "allOf":
+          [
+            { "$ref": "#/definitions/unsignedInt100" },
+            { "default": 50 }
+          ]
+        },
+        "viewColorNoiseReduction":
+        {
+          "description": "<2D-denoise>, corresponds to crs:ColorNoiseReduction",
+          "allOf":
+          [
+            { "$ref": "#/definitions/unsignedInt100" },
+            { "default": 50 }
+          ]
+        },
+        "viewParametricShadows":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricShadows",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewParametricDarks":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricDarks",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewParametricLights":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricLights",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewParametricHighlights":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricHighlights",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewParametricShadowSplit":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricShadowSplit",
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 70
+        },
+        "viewParametricMidtoneSplit":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricMidtoneSplit",
+          "type": "integer",
+          "minimum": 20,
+          "maximum": 80
+        },
+        "viewParametricHighlightSplit":
+        {
+          "description": "<parametricTone>, corresponds to crs:ParametricHighlightSplit",
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 90
+        },
+        "viewSharpness2":
+        {
+          "description": "<sharpen>, corresponds to crs:Sharpness",
+          "allOf":
+          [
+            { "$ref": "#/definitions/unsignedInt150" },
+            { "default": 25 }
+          ]
+        },
+        "viewSharpenRadius":
+        {
+          "description": "<sharpen>, corresponds to crs:SharpenRadius",
+          "allOf":
+          [
+            { "type": "number" },
+            { "default": 1.0 }
+          ]
+        },
+        "viewSharpenDetail":
+        {
+          "description": "<sharpen>, corresponds to crs:SharpenDetail",
+          "allOf":
+          [
+            { "$ref": "#/definitions/unsignedInt100" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewSharpenEdgeMasking":
+        {
+          "description": "<sharpen>, corresponds to crs:SharpenEdgeMasking",
+          "allOf":
+          [
+            { "$ref": "#/definitions/unsignedInt100" },
+            { "default": 0.0 }
+          ]
+        },
+        "viewDefringe":
+        {
+          "description": "<defringe>, enable reduction in fringe artifacts",
+          "type": "boolean",
+          "default": false
+        },
+        "viewDefringeThreshold":
+        {
+          "description": "<defringe>, threshold at which fringe reduction begins: 100 substantially defeats defringing",
+          "allOf":
+          [
+            { "$ref": "#/definitions/unsignedInt100" },
+            { "default": 50 }
+          ]
+        },
+        "viewDefringeRadius":
+        {
+          "description": "<defringe>, pixel radius of fringe-reduction region",
+          "allOf":
+          [
+            { "$ref": "#/definitions/pixelDimension" },
+            { "maximum": 10.0 },
+            { "default": 5.5 }
+          ]
+        },
+        "viewContrast":
+        {
+          "description": "<contrast>, corresponds to crs:Contrast2012",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturation":
+        {
+          "description": "<saturate>, corresponds to crs:Saturation",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturationRed":
+        {
+          "description": "<saturate>, corresponds to crs:SaturationAdjustmentRed",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturationGreen":
+        {
+          "description": "<saturate>, corresponds to crs:SaturationAdjustmentGreen",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturationBlue":
+        {
+          "description": "<saturate>, corresponds to crs:SaturationAdjustmentBlue",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturationMagenta":
+        {
+          "description": "<saturate>, corresponds to crs:SaturationAdjustmentMagenta",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturationCyan":
+        {
+          "description": "<saturate>, XXX there is no direct crs correspondence.  Candidates include Orange, Aqua, and Purple",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewSaturationYellow":
+        {
+          "description": "<saturate>, corresponds to crs:SaturationAdjustmentYellow",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewVibrance":
+        {
+          "description": "<saturate>, corresponds to crs:Vibrance",
+          "allOf":
+          [
+            { "$ref": "#/definitions/signedInt100" },
+            { "default": 0 }
+          ]
+        },
+        "viewPanX":
+        {
+          "description": "<window>, position in RNC of the center of the window",
+          "allOf":
+          [
+            { "$ref": "#/definitions/reorientNormalizedCoord" },
+            { "default": 0.5 }
+          ]
+        },
+        "viewPanY":
+        {
+          "description": "<window>, position in RNC of the center of the window",
+          "allOf":
+          [
+            { "$ref": "#/definitions/reorientNormalizedCoord" },
+            { "default": 0.5 }
+          ]
+        },
+        "viewZoom":
+        {
+          "description": "<window>, scale factor from RNC to WNC",
+          "type": "number",
+          "default": 1.0
+        },
+        "viewFocusAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewFocusXAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewFocusYAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewTiltXAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewTiltYAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewApertureAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewFocusSpreadAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPerspectiveUAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPerspectiveVAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPivotAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewStereoPivotAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewStereoBaselineAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewExposureAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewTemperatureAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewTintAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewBlacks2Animation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewWhites2Animation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewShadows2Animation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewHighlights2Animation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewLuminanceNoiseReductionAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewColorNoiseReductionAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSharpness2Animation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSharpenRadiusAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSharpenDetailAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSharpenEdgeMaskingAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewDefringeThresholdAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewDefringeRadiusAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewContrastAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationRedAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationGreenAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationBlueAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationMagentaAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationCyanAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewSaturationYellowAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewVibranceAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPanXAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewPanYAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        },
+        "viewZoomAnimation":
+        {
+            "$ref": "#/definitions/animation"
+        }
+      }
+    },
+    "animationValue":
+    {
+      "anyOf":
+      [
+        { "type": "number"                                },
+        { "type": "integer"                               },
+        { "$ref": "#/definitions/lambda"                  },
+        { "$ref": "#/definitions/frameNormalizedSlope"    },
+        { "$ref": "#/definitions/windowApertureCoord"     },
+        { "$ref": "#/definitions/windowApertureDistance"  },
+        { "$ref": "#/definitions/signed5"                 },
+        { "$ref": "#/definitions/signedInt100"            },
+        { "$ref": "#/definitions/signedInt150"            },
+        { "$ref": "#/definitions/unsignedInt100"          },
+        { "$ref": "#/definitions/unsignedInt150"          },
+        { "$ref": "#/definitions/reorientNormalizedCoord" }
+      ]
+    },
+    "animation":
+    {
+      "title": "animation",
+      "description": "optional initial value, optionally augmented with additional value-time-handle control points",
+      "type": "object",
+      "additionalProperties": false,
+      "properties":
+      {
+        "initialValue":
+        {
+          "description": "animation value at t=0.0; if not specified, value is taken from the corresponding view parameter",
+          "$ref": "#/definitions/animationValue"
+        },
+        "values":
+        {
+          "description": "animation values, omitting the t=0.0 value; number of items is controlling",
+          "type": "array",
+          "minItems": 0,
+          "default": [ ],
+          "items": { "$ref": "#/definitions/animationValue" }
+        },
+        "times":
+        {
+          "description": "animation times, omitting t=0.0; if number of items is less than value, complete with 1-second intervals",
+          "type": "array",
+          "minItems": 0,
+          "uniqueItems": true,
+          "default": [ ],
+          "items": { "$ref": "#/definitions/nonNegativeSecond" }
+        },
+        "handlePairs":
+        {
+          "description": "handle pairs, one for each array item (and its predecesor); missing pairs default to linear interpolation",
+          "type": "array",
+          "minItems": 0,
+          "default": [ ],
+          "items":
+          {
+            "title": "handle pair",
+            "type": "object",
+            "required": [ "dv0", "dt0", "dv1", "dt1" ],
+            "additionalProperties": false,
+            "properties":
+            {
+              "dv0": { "$ref": "#/definitions/animationValue" },
+              "dv1": { "$ref": "#/definitions/animationValue" },
+              "dt0": { "$ref": "#/definitions/second" },
+              "dt1": { "$ref": "#/definitions/second" }
+            }
+          }
+        }
+      }
+    },
+    "frameAcceleration":
+    {
+      "title": "frame acceleration",
+      "description": "cached data to accelerate rendering PRIOR to view-dependent computations",
+      "oneOf":
+      [
+        { "$ref": "#/definitions/depthMapFrameAcceleration" },
+        { "$ref": "#/definitions/compressedFrameAcceleration" },
+        { "$ref": "#/definitions/demodulatedFrameAcceleration" }
+      ]
+    },
+    "frameAccelerationGenerator":
+    {
+      "description": "software system that computed the acceleration content",
+      "type": "string"
+    },
+    "depthMapFrameAcceleration":
+    {
+      "description": "uncropped depth map that is useful for picture processing",
+      "type": "object",
+      "required": [ "generator", "kind", "depthMap", "confidenceMap", "width", "height", "minLambda", "maxLambda" ],
+      "additionalProperties": false,
+      "properties":
+      {
+        "generator": { "$ref": "#/definitions/frameAccelerationGenerator" },
+        "kind": { "enum": [ "depthMap" ] },
+        "depthMap":
+        {
+          "type": "object",
+          "required": [ "representation" ],
+          "oneOf":
+          [
+            { "required": [ "imageRef"  ] },
+            { "required": [ "imageUrl"  ] },
+            { "required": [ "imagePath" ] }
+          ],
+          "additionalProperties": false,
+          "properties":
+          {
+            "imageRef":       { "$ref": "#/definitions/blobRef"                  },
+            "imageUrl":       { "$ref": "#/definitions/url"                      },
+            "imagePath":      { "$ref": "#/definitions/path"                     },
+            "representation": { "$ref": "#/definitions/depthImageRepresentation" }
+          }
+        },
+        "confidenceMap":
+        {
+          "type": "object",
+          "required": [ "representation" ],
+          "oneOf":
+          [
+            { "required": [ "imageRef"  ] },
+            { "required": [ "imageUrl"  ] },
+            { "required": [ "imagePath" ] }
+          ],
+          "additionalProperties": false,
+          "properties":
+          {
+            "imageRef":       { "$ref": "#/definitions/blobRef" },
+            "imageUrl":       { "$ref": "#/definitions/url"     },
+            "imagePath":      { "$ref": "#/definitions/path"    },
+            "representation": { "$ref": "#/definitions/confidenceImageRepresentation" }
+          }
+        },
+        "width":     { "$ref": "#/definitions/frameDiscreteDepthDimension" },
+        "height":    { "$ref": "#/definitions/frameDiscreteDepthDimension" },
+        "minLambda": { "$ref": "#/definitions/lambda"              },
+        "maxLambda": { "$ref": "#/definitions/lambda"              },
+        "mapToImage":
+        {
+          "description": "mapping of depthMap pixel coordinates to normalized image coordinates",
+          "type": "object",
+          "required": [ "origin", "xStep", "yStep" ],
+          "additionalProperties": false,
+          "properties":
+          {
+            "origin":
+            {
+              "description": "frame-normalized image coordinates (FNC) corresponding to depthMap coord [0.0, 0.0]",
+              "type": "object",
+              "required": [ "x", "y" ],
+              "additionalProperties": false,
+              "properties":
+              {
+                "x":
+                {
+                  "$ref": "#/definitions/normalizedCoord",
+                  "default": 0.0
+                },
+                "y":
+                {
+                  "$ref": "#/definitions/normalizedCoord",
+                  "default": 0.0
+                }
+              }
+            },
+            "xStep":
+            {
+              "description": "signed change in normalized image coords for a step from depth-map coord [x, y] to coord [x+1.0, y]",
+              "type": "object",
+              "required": [ "dx", "dy" ],
+              "additionalProperties": false,
+              "properties":
+              {
+                "dx":
+                {
+                  "description": "default is (1.0 / imageWidth)",
+                  "$ref": "#/definitions/normalizedDistance"
+                },
+                "dy":
+                {
+                  "$ref": "#/definitions/normalizedDistance",
+                  "default": 0.0
+                }
+              }
+            },
+            "yStep":
+            {
+              "description": "signed change in normalized image coords for a step from depth-map coord [x, y] to coord [x, y+1.0]",
+              "type": "object",
+              "required": [ "dx", "dy" ],
+              "additionalProperties": false,
+              "properties":
+              {
+                "dx":
+                {
+                  "$ref": "#/definitions/normalizedDistance",
+                  "default": 0.0
+                },
+                "dy":
+                {
+                  "description": "default is (1.0 / imageHeight)",
+                  "$ref": "#/definitions/normalizedDistance"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "compressedFrameAcceleration":
+    {
+      "description": "lossy compression of the sensor image",
+      "type": "object",
+      "required": [ "generator", "kind", "content", "version", "stride", "paddingPerTile", "codes" ],
+      "oneOf":
+      [
+        { "required": [ "imageRef"  ] },
+        { "required": [ "imageUrl"  ] },
+        { "required": [ "imagePath" ] }
+      ],
+      "additionalProperties": false,
+      "properties":
+      {
+        "generator": { "$ref": "#/definitions/frameAccelerationGenerator" },
+        "kind":      { "enum": [ "compressed" ] },
+        "imageRef":  { "$ref": "#/definitions/blobRef" },
+        "imageUrl":  { "$ref": "#/definitions/url"     },
+        "imagePath": { "$ref": "#/definitions/path"    },
+        "content":
+        {
+          "description": "the content of the image, modulation indicates the interpolated modulation image for this picture",
+          "enum": [ "image", "modulation" ]
+        },
+        "version":
+        {
+          "description": "version of compression algorithm used",
+          "type": "string"
+        },
+        "stride":
+        {
+          "description": "pixel stride used to regroup image into tiles",
+          "type": "object",
+          "required": [ "x", "y" ],
+          "additionalProperties": false,
+          "properties":
+          {
+            "x": { "$ref": "#/definitions/positiveInt" },
+            "y": { "$ref": "#/definitions/positiveInt" }
+          }
+        },
+        "paddingPerTile":
+        {
+          "description": "minimum padding per tile, perimeter tiles may have more padding",
+          "type": "object",
+          "required": [ "x", "y" ],
+          "additionalProperties": false,
+          "properties":
+          {
+            "x": { "$ref": "#/definitions/nonNegativeInt" },
+            "y": { "$ref": "#/definitions/nonNegativeInt" }
+          }
+        },
+        "codes":
+        {
+          "description": "map jpeg pixel values to uncompressed pixel values",
+          "type": "array",
+          "minItems": 256,
+          "maxItems": 256,
+          "items": { "$ref": "#/definitions/nonNegativeInt" }
+        }
+      }
+    },
+    "demodulatedFrameAcceleration":
+    {
+      "description": "demodulated frame data",
+      "type": "object",
+      "required": [ "generator", "kind", "imageTiles", "representation" ],
+      "additionalProperties": false,
+      "properties":
+      {
+        "generator": { "$ref": "#/definitions/frameAccelerationGenerator" },
+        "kind": { "enum": [ "demodulated" ] },
+        "imageTiles":
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items":
+          {
+            "title": "image tile",
+            "description": "a 2D tile of the demodulated frame",
+            "type": "object",
+            "required": [ "imageRef", "top", "left", "width", "height" ],
+            "additionalProperties": false,
+            "properties":
+            {
+              "imageRef": { "$ref": "#/definitions/blobRef" },
+              "top":      { "$ref": "#/definitions/sensorDiscretePixelCoord" },
+              "left":     { "$ref": "#/definitions/sensorDiscretePixelCoord" },
+              "width":    { "$ref": "#/definitions/sensorDiscretePixelDimension" },
+              "height":   { "$ref": "#/definitions/sensorDiscretePixelDimension" },
+              "codesRef": { "$ref": "#/definitions/blobRef" }
+            }
+          }
+        },
+        "representation":
+        {
+          "description": "the high-level representation of the tiles, optional",
+          "enum": [ "unpacked", "fixedLength", "prefixFree", "exr" ]
+        },
+        "encoding":
+        {
+          "description": "additional details required by some representations",
+          "type": "object",
+          "required": [ "decodedBitsPerPixel", "decodedSigned", "decodedFloatingPoint" ],
+          "additionalProperties": false,
+          "properties":
+          {
+            "fixedCodeLength":      { "allOf": [ { "$ref": "#/definitions/positiveInt" }, { "default": 8 } ] },
+            "sharedCodesRef":       { "$ref": "#/definitions/blobRef" },
+            "decodedBitsPerPixel":  { "$ref": "#/definitions/positiveInt" },
+            "decodedSigned":        { "type": "boolean" },
+            "decodedFloatingPoint": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "viewAcceleration":
+    {
+      "title": "view acceleration",
+      "description": "cached data to accelerate rendering of view-specified picture",
+      "oneOf":
+      [
+        { "$ref": "#/definitions/focusStackViewAcceleration"        },
+        { "$ref": "#/definitions/edofPerspectiveViewAcceleration"   },
+        { "$ref": "#/definitions/edofWarpViewAcceleration"          },
+        { "$ref": "#/definitions/singleImageViewAcceleration"       },
+        { "$ref": "#/definitions/videoViewAcceleration"             },
+        { "$ref": "#/definitions/uncroppedViewAcceleration"         },
+        { "$ref": "#/definitions/edofWarpPreAdjustViewAcceleration" }
+      ]
+    },
+    "viewAccelerationGenerator":
+    {
+      "description": "software system that computed the acceleration content",
+      "type": "string"
+    },
+    "focusStackViewAcceleration":
+    {
+      "description": "a stack of images at different focuses",
+      "type": "object",
+      "required": [ "generator", "kind", "width", "height", "suggestedOverscan", "pitchRatio", "depthMap" ],
+      "additionalProperties": false,
+      "properties":
+      {
+        "generator":         { "$ref": "#/definitions/viewAccelerationGenerator" },
+        "kind":              { "enum": [ "focusStack" ] },
+        "blockOfImagesRef":  { "description": "placeholder that allows use of additionalProperties false" },
+        "blockOfImagesUrl":  { "description": "placeholder that allows use of additionalProperties false" },
+        "blockOfImagesPath": { "description": "placeholder that allows use of additionalProperties false" },
+        "perImage":          { "description": "placeholder that allows use of additionalProperties false" },
+        "representation":    { "description": "placeholder that allows use of additionalProperties false" },
+        "width":             { "$ref": "#/definitions/reorientDiscretePixelDimension" },
+        "height":            { "$ref": "#/definitions/reorientDiscretePixelDimension" },
+        "suggestedOverscan": { "$ref": "#/definitions/reorientPixelOverscan" },
+        "pitchRatio":        { "$ref": "#/definitions/reorientPitchRatio" },
+        "colorSpace":
+        {
+          "allOf":
+          [
+            { "$ref": "#/definitions/colorSpace" },
+            { "default": "sRGB" }
+          ]
+        },
+        "stereoContent":
+        {
+          "allOf":
+          [
+            { "$ref": "#/definitions/stereoContent" },
+            { "default": "none" }
+          ]
+        },
+        "animationMoment":
+        {
+          "description": "the moment when view parameters with unsupported animation, if any, were sampled and rendered",
+          "allOf":
+          [
+            { "$ref": "#/definitions/nonNegativeSecond" },
+            { "default": 0.0 }
+          ]
+        },
+        "depthMap": { "$ref": "#/definitions/viewAccelerationDepthMap" }
+      },
+      "oneOf":
+      [
+        {
+          "required": [ "perImage", "representation" ],
+          "not":
+          {
+            "anyOf":
+            [
+              { "required": [ "blockOfImagesRef"  ] },
+              { "required": [ "blockOfImagesUrl"  ] },
+              { "required": [ "blockOfImagesPath" ] }
+            ]
+          },
+          "properties":
+          {
+            "perImage":
+            {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items":
+              {
+                "type": "object",
+                "required": [ "focus" ],
+                "oneOf":
+                [
+                  { "required": [ "imageRef"  ] },
+                  { "required": [ "imageUrl"  ] },
+                  { "required": [ "imagePath" ] }
+                ],
+                "additionalProperties": false,
+                "properties":
+                {
+                  "imageRef":  { "$ref": "#/definitions/blobRef" },
+                  "imageUrl":  { "$ref": "#/definitions/url"     },
+                  "imagePath": { "$ref": "#/definitions/path"    },
+                  "focus":     { "$ref": "#/definitions/lambda" }
+                }
+              }
+            },
+            "representation": { "$ref": "#/definitions/imageRepresentation" }
+          }
+        },
+        {
+          "required": [ "perImage", "representation" ],
+          "oneOf":
+          [
+            { "required": [ "blockOfImagesRef"  ] },
+            { "required": [ "blockOfImagesUrl"  ] },
+            { "required": [ "blockOfImagesPath" ] }
+          ],
+          "properties":
+          {
+            "blockOfImagesRef":  { "$ref": "#/definitions/blobRef" },
+            "blockOfImagesUrl":  { "$ref": "#/definitions/url"     },
+            "blockOfImagesPath": { "$ref": "#/definitions/path"    },
+            "perImage":
+            {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items":
+              {
+                "type": "object",
+                "required": [ "focus" ],
+                "additionalProperties": false,
+                "properties":
+                {
+                  "focus": { "$ref": "#/definitions/lambda" }
+                }
+              }
+            },
+            "representation": { "enum": [ "H.264" ] }
+          }
+        }
+      ]
+    },
+    "edofPerspectiveViewAcceleration":
+    {
+      "description": "a 2D sampling of images with different perspectives",
+      "type": "object",
+      "required": [ "generator", "kind", "width", "height", "suggestedOverscan", "pitchRatio" ],
+      "additionalProperties": false,
+      "properties":
+      {
+        "generator":         { "$ref": "#/definitions/viewAccelerationGenerator" },
+        "kind":              { "enum": [ "edofPerspective" ] },
+        "blockOfImagesRef":  { "description": "placeholder that allows use of additionalProperties false" },
+        "blockOfImagesUrl":  { "description": "placeholder that allows use of additionalProperties false" },
+        "blockOfImagesPath": { "description": "placeholder that allows use of additionalProperties false" },
+        "perImage":          { "description": "placeholder that allows use of additionalProperties false" },
+        "representation":    { "description": "placeholder that allows use of additionalProperties false" },
+        "width":             { "$ref": "#/definitions/reorientDiscretePixelDimension" },
+        "height":            { "$ref": "#/definitions/reorientDiscretePixelDimension" },
+        "suggestedOverscan": { "$ref": "#/definitions/reorientPixelOverscan" },
+        "pitchRatio":        { "$ref": "#/definitions/reorientPitchRatio" },
+        "colorSpace":
+        {
+          "allOf":
+          [
+            { "$ref": "#/definitions/colorSpace" },
+            { "default": "sRGB" }
+          ]
+        },
+        "animationMoment":
+        {
+          "description": "the moment when view parameters with unsupported animation, if any, were sampled and rendered",
+          "allOf":
+          [
+            { "$ref": "#/definitions/nonNegativeSecond" },
+            { "default": 0.0 }
+          ]
+        }
+      },
+      "oneOf":
+      [
+        {
+          "required": [ "perImage", "representation" ],
+          "not":
+          {
+            "anyOf":
+            [
+              { "required": [ "blockOfImagesRef"  ] },
+              { "required": [ "blockOfImagesUrl"  ] },
+              { "required": [ "blockOfImagesPath" ] }
+            ]
+          },
+          "properties":
+          {
+            "perImage":
+            {
+              "type": "array",
+              "minItems": 7,
+              "uniqueItems": true,
+              "items":
+              {
+                "type": "object",
+                "required": [ "perspective" ],
+                "oneOf":
+                [
+                  { "required": [ "imageRef"  ] },
+                  { "required": [ "imageUrl"  ] },
+                  { "required": [ "imagePath" ] }
+                ],
+                "additionalProperties": false,
+                "properties":
+                {
+                  "imageRef":  { "$ref": "#/definitions/blobRef" },
+                  "imageUrl":  { "$ref": "#/definitions/url"     },
+                  "imagePath": { "$ref": "#/definitions/path"    },
+                  "perspective":
+                  {
+                    "type": "object",
+                    "required": [ "u", "v" ],
+                    "additionalProperties": false,
+                    "properties":
+                    {
+                      "u": { "$ref": "#/definitions/reorientApertureCoord" },
+                      "v": { "$ref": "#/definitions/reorientApertureCoord" }
+                    }
+                  }
+                }
+              }
+            },
+            "representation": { "$ref": "#/definitions/imageRepresentation" }
+          }
+        },
+        {
+          "required": [ "representation", "perImage" ],
+          "oneOf":
+          [
+            { "required": [ "blockOfImagesRef"  ] },
+            { "required": [ "blockOfImagesUrl"  ] },
+            { "required": [ "blockOfImagesPath" ] }
+          ],
+          "properties":
+          {
+            "blockOfImagesRef":  { "$ref": "#/definitions/blobRef" },
+            "blockOfImagesUrl":  { "$ref": "#/definitions/url"     },
+            "blockOfImagesPath": { "$ref": "#/definitions/path"    },
+            "representation":    { "enum": [ "H.264" ] },
+            "perImage":
+            {
+              "type": "array",
+              "minItems": 7,
+              "uniqueItems": true,
+              "items":
+              {
+                "type": "object",
+                "required": [ "perspective" ],
+                "additionalProperties": false,
+                "properties":
+                {
+                  "perspective":
+                  {
+                    "type": "object",
+                    "required": [ "u", "v" ],
+                    "additionalProperties": false,
+                    "properties":
+                    {
+                      "u": { "$ref": "#/definitions/reorientApertureCoord" },
+                      "v": { "$ref": "#/definitions/reorientApertureCoord" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "edofWarpViewAcceleration":
+    {
+      "description": "play-back only edof-warp acceleration suitable for desktop, web, and mobile",
+      "type": "object",
+      "required": [ "generator", "kind", "width", "height", "suggestedOverscan", "pitchRatio", "depthMap" ],
+      "additionalProperties": false,
+      "properties":
+      {
+        "generator":         { "$ref": "#/definitions/viewAccelerationGenerator" },
+        "kind":              { "enum": [ "edofWarp" ] },
+        "blockOfImagesRef":  { "description": "placeholder that allows use of additionalProperties false" },
+        "blockOfImagesUrl":  { "description": "placeholder that allows use of additionalProperties false" },
+        "blockOfImagesPath": { "description": "placeholder that allows use of additionalProperties false" },
+        "perImage":          { "description": "placeholder that allows use of additionalProperties false" },
+        "representation":    { "description": "placeholder that allows use of additionalProperties false" },
+        "width":
+        {
+          "description": "actual pixel width of the image(s)",
+          "$ref": "#/definitions/reorientDiscretePixelDimension"
+        },
+        "height":
+        {
+          "description": "actual pixel height of the image(s)",
+          "$ref": "#/definitions/reorientDiscretePixelDimension"
+        },
+        "pixelAspectRatio":
+        {
+          "description": "pixel width/height ratio that distorts the image to the desired proportions",
+          "$ref": "#/definitions/pixelAspectRatio"
+        },
+        "suggestedOverscan":
+        {
+          "description": "in units of image pixels as they are, ignoring any aspect-ratio distortion",
+          "$ref": "#/definitions/reorientPixelOverscan"
+        },
+        "pitchRatio":
+        {
+          "description": "in units of image pixels as they are, ignoring any aspect-ratio distortion",
+          "$ref": "#/definitions/reorientPitchRatio"
+        },
+        "colorSpace":
+        {
+          "allOf":
+          [
+            { "$ref": "#/definitions/colorSpace" },
+            { "default": "sRGB" }
+          ]
+        },
+        "animationMoment":
+        {
+          "description": "the moment when view parameters with unsupported animation, if any, were sampled and rendered",
+          "allOf":
+          [
+            { "$ref": "#/definitions/nonNegativeSecond" },
+            { "default": 0.0 }
+          ]
+        },
+        "depthMap": { "$ref": "#/definitions/viewAccelerationDepthMap" }
+      },
+      "oneOf":
+      [
+        {
+          "required": [ "perImage", "representation" ],
+          "not":
+          {
+            "anyOf":
+            [
+              { "required": [ "blockOfImagesRef"  ] },
+              { "required": [ "blockOfImagesUrl"  ] },
+              { "required": [ "blockOfImagesPath" ] }
+            ]
+          },
+          "properties":
+          {
+            "perImage":
+            {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items":
+              {
+                "type": "object",
+                "required": [ "perspective" ],
+                "oneOf":
+                [
+                  { "required": [ "imageRef"  ] },
+                  { "required": [ "imageUrl"  ] },
+                  { "required": [ "imagePath" ] }
+                ],
+                "additionalProperties": false,
+                "properties":
+                {
+                  "imageRef":  { "$ref": "#/definitions/blobRef" },
+                  "imageUrl":  { "$ref": "#/definitions/url"     },
+                  "imagePath": { "$ref": "#/definitions/path"    },
+                  "perspective":
+                  {
+                    "type": "object",
+                    "required": [ "u", "v" ],
+                    "additionalProperties": false,
+                    "properties":
+                    {
+                      "u": { "$ref": "#/definitions/reorientApertureCoord" },
+                      "v": { "$ref": "#/definitions/reorientApertureCoord" }
+                    }
+                  }
+                }
+              }
+            },
+            "representation": { "$ref": "#/definitions/imageRepresentation" }
+          }
+        },
+        {
+          "required": [ "representation", "perImage" ],
+          "oneOf":
+          [
+            { "required": [ "blockOfImagesRef"  ] },
+            { "required": [ "blockOfImagesUrl"  ] },
+            { "required": [ "blockOfImagesPath" ] }
+          ],
+          "properties":
+          {
+            "blockOfImagesRef":  { "$ref": "#/definitions/blobRef" },
+            "blockOfImagesUrl":  { "$ref": "#/definitions/url"     },
+            "blockOfImagesPath": { "$ref": "#/definitions/path"    },
+            "representation":    { "enum": [ "H.264" ] },
+            "perImage":
+            {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items":
+              {
+                "type": "object",
+                "required": [ "perspective" ],
+                "additionalProperties": false,
+                "properties":
+                {
+                  "perspective":
+                  {
+                    "type": "object",
+                    "required": [ "u", "v" ],
+                    "additionalProperties": false,
+                    "properties":
+                    {
+                      "u": { "$ref": "#/definitions/reorientApertureCoord" },
+                      "v": { "$ref": "#/definitions/reorientApertureCoord" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "singleImageViewAcceleration":
+    {
+      "description": "a single image",
+      "type": "object",
+      "required": [ "generator", "kind", "representation", "width", "height", "appliedOverscan", "pitchRatio" ],
+      "oneOf":
+      [
+        { "required": [ "imageRef"  ] },
+        { "required": [ "imageUrl"  ] },
+        { "required": [ "imagePath" ] }
+      ],
+      "additionalProperties": false,
+      "properties":
+      {
+        "generator":         { "$ref": "#/definitions/viewAccelerationGenerator" },
+        "kind":              { "enum": [ "singleImage" ] },
+        "imageRef":          { "$ref": "#/definitions/blobRef" },
+        "imageUrl":          { "$ref": "#/definitions/url" },
+        "imagePath":         { "$ref": "#/definitions/path" },
+        "representation":    { "$ref": "#/definitions/imageRepresentation" },
+        "width":             { "$ref": "#/definitions/windowDiscretePixelDimension" },
+        "height":            { "$ref": "#/definitions/windowDiscretePixelDimension" },
+        "appliedOverscan":   { "$ref": "#/definitions/reorientPixelOverscan" },
+        "pitchRatio":        { "$ref": "#/definitions/reorientPitchRatio" },
+        "colorSpace":
+        {
+          "allOf":
+          [
+            { "$ref": "#/definitions/colorSpace" },
+            { "default": "sRGB" }
+          ]
+        },
+        "stereoContent":
+        {
+          "allOf":
+          [
+            { "$ref": "#/definitions/stereoContent" },
+            { "default": "none" }
+          ]
+        },
+        "animationMoment":
+        {
+          "description": "the moment when view parameters with unsupported animation, if any, were sampled and rendered",
+          "allOf":
+          [
+            { "$ref": "#/definitions/nonNegativeSecond" },
+            { "default": 0.0 }
+          ]
+        },
+        "depthMap": { "$ref": "#/definitions/viewAccelerationDepthMap" }
+      }
+    },
+    "videoViewAcceleration":
+    {
+      "description": "a video, typically including animation",
+      "type": "object",
+      "required": [ "generator", "kind", "representation", "width", "height", "appliedOverscan", "pitchRatio" ],
+      "oneOf":
+      [
+        { "required": [ "blockOfImagesRef"  ] },
+        { "required": [ "blockOfImagesUrl"  ] },
+        { "required": [ "blockOfImagesPath" ] }
+      ],
+      "additionalProperties": false,
+      "properties":
+      {
+        "generator":         { "$ref": "#/definitions/viewAccelerationGenerator" },
+        "kind":              { "enum": [ "video" ] },
+        "blockOfImagesRef":  { "$ref": "#/definitions/blobRef" },
+        "blockOfImagesUrl":  { "$ref": "#/definitions/url" },
+        "blockOfImagesPath": { "$ref": "#/definitions/path" },
+        "representation":    { "enum": [ "H.264" ] },
+        "width":             { "$ref": "#/definitions/windowDiscretePixelDimension" },
+        "height":            { "$ref": "#/definitions/windowDiscretePixelDimension" },
+        "appliedOverscan":   { "$ref": "#/definitions/reorientPixelOverscan" },
+        "pitchRatio":        { "$ref": "#/definitions/reorientPitchRatio" },
+        "colorSpace":
+        {
+          "allOf":
+          [
+            { "$ref": "#/definitions/colorSpace" },
+            { "default": "sRGB" }
+          ]
+        },
+        "stereoContent":
+        {
+          "allOf":
+          [
+            { "$ref": "#/definitions/stereoContent" },
+            { "default": "none" }
+          ]
+        }
+      }
+    },
+    "uncroppedViewAcceleration":
+    {
+      "description": "a single center-view, uncropped, edof image, useful for the crop-specification user interface",
+      "type": "object",
+      "required": [ "generator", "kind", "representation", "width", "height" ],
+      "oneOf":
+      [
+        { "required": [ "imageRef"  ] },
+        { "required": [ "imageUrl"  ] },
+        { "required": [ "imagePath" ] }
+      ],
+      "additionalProperties": false,
+      "properties":
+      {
+        "generator":      { "$ref": "#/definitions/viewAccelerationGenerator" },
+        "kind":           { "enum": [ "uncropped" ] },
+        "imageRef":       { "$ref": "#/definitions/blobRef" },
+        "imageUrl":       { "$ref": "#/definitions/url" },
+        "imagePath":      { "$ref": "#/definitions/path" },
+        "representation": { "$ref": "#/definitions/imageRepresentation" },
+        "width":          { "$ref": "#/definitions/frameDiscretePixelDimension" },
+        "height":         { "$ref": "#/definitions/frameDiscretePixelDimension" },
+        "colorSpace":
+        {
+          "allOf":
+          [
+            { "$ref": "#/definitions/colorSpace" },
+            { "default": "sRGB" }
+          ]
+        }
+      }
+    },
+    "edofWarpPreAdjustViewAcceleration":
+    {
+      "description": "a high-pixel-depth, partially view-processed edof-warp image stack, useful for desktop adjustments",
+      "type": "object",
+      "required": [ "generator", "kind", "perFrame" ],
+      "additionalProperties": false,
+      "properties":
+      {
+        "generator": { "$ref": "#/definitions/viewAccelerationGenerator" },
+        "kind": { "enum": [ "edofWarpPreAdjust" ] },
+        "perFrame":
+        {
+          "description": "one set of data for each frame",
+          "type": "array",
+          "minItems": 1,
+          "items":
+          {
+            "description": "images, depth map, and related metadata for a single frame",
+            "type": "object",
+            "required":
+            [
+              "perImage",
+              "representation",
+              "width",
+              "height",
+              "suggestedOverscan",
+              "whiteBalanceGains",
+              "toneMap",
+              "depthMap",
+              "confidenceMap"
+            ],
+            "additionalProperties": false,
+            "properties":
+            {
+              "perImage":
+              {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items":
+                {
+                  "type": "object",
+                  "required": [ "perspective" ],
+                  "oneOf":
+                  [
+                    { "required": [ "imageRef"  ] },
+                    { "required": [ "imageUrl"  ] },
+                    { "required": [ "imagePath" ] }
+                  ],
+                  "additionalProperties": false,
+                  "properties":
+                  {
+                    "imageRef":  { "$ref": "#/definitions/blobRef" },
+                    "imageUrl":  { "$ref": "#/definitions/url"     },
+                    "imagePath": { "$ref": "#/definitions/path"    },
+                    "perspective":
+                    {
+                      "type": "object",
+                      "required": [ "u", "v" ],
+                      "additionalProperties": false,
+                      "properties":
+                      {
+                        "u": { "$ref": "#/definitions/reorientApertureCoord" },
+                        "v": { "$ref": "#/definitions/reorientApertureCoord" }
+                      }
+                    }
+                  }
+                }
+              },
+              "representation": { "$ref": "#/definitions/imageRepresentation" },
+              "width":
+              {
+                "description": "actual pixel width of the image(s)",
+                "$ref": "#/definitions/reorientDiscretePixelDimension"
+              },
+              "height":
+              {
+                "description": "actual pixel height of the image(s)",
+                "$ref": "#/definitions/reorientDiscretePixelDimension"
+              },
+              "pixelAspectRatio":
+              {
+                "description": "pixel width/height ratio that distorts the image to the desired proportions",
+                "$ref": "#/definitions/pixelAspectRatio"
+              },
+              "suggestedOverscan":
+              {
+                "description": "in units of image pixels as they are, ignoring any aspect-ratio distortion",
+                "$ref": "#/definitions/reorientPixelOverscan"
+              },
+              "colorSpace":
+              {
+                "allOf":
+                [
+                  { "$ref": "#/definitions/colorSpace" },
+                  { "default": "cRGB" }
+                ]
+              },
+              "animationMoment":
+              {
+                "description": "the moment when view parameters with unsupported animation, if any, were sampled and rendered",
+                "allOf":
+                [
+                  { "$ref": "#/definitions/nonNegativeSecond" },
+                  { "default": 0.0 }
+                ]
+              },
+              "whiteBalanceGains":
+              {
+                "type": "object",
+                "required": [ "r", "g", "b" ],
+                "additionalProperties": false,
+                "properties":
+                {
+                  "r":
+                  {
+                    "type": "number",
+                    "default": 1.0
+                  },
+                  "g":
+                  {
+                    "type": "number",
+                    "default": 1.0
+                  },
+                  "b":
+                  {
+                    "type": "number",
+                    "default": 1.0
+                  }
+                }
+              },
+              "toneMap":
+              {
+                "type": "object",
+                "required": [ "gain", "offset" ],
+                "additionalProperties": false,
+                "properties":
+                {
+                  "gain":
+                  {
+                    "type": "number",
+                    "default": 1.0
+                  },
+                  "offset":
+                  {
+                    "type": "number",
+                    "default": 0.0
+                  },
+                  "minBlack":
+                  {
+                    "type": "number",
+                    "default": 0.0
+                  },
+                  "maxBlack":
+                  {
+                    "type": "number",
+                    "default": 0.0
+                  },
+                  "minWhite":
+                  {
+                    "type": "number",
+                    "default": 1.0
+                  },
+                  "maxWhite":
+                  {
+                    "type": "number",
+                    "default": 1.0
+                  }
+                }
+              },
+              "depthMap": { "$ref": "#/definitions/viewAccelerationDepthMap" },
+              "confidenceMap": { "$ref": "#/definitions/viewAccelerationConfidenceMap" }
+            }
+          }
+        }
+      }
+    },
+    "viewAccelerationDepthMap":
+    {
+      "description": "depth map that is useful for players and/or for picture processing",
+      "type": "object",
+      "required": [ "representation", "width", "height", "minLambda", "maxLambda" ],
+      "oneOf":
+      [
+        { "required": [ "imageRef"  ] },
+        { "required": [ "imageUrl"  ] },
+        { "required": [ "imagePath" ] }
+      ],
+      "additionalProperties": false,
+      "properties":
+      {
+        "imageRef":       { "$ref": "#/definitions/blobRef" },
+        "imageUrl":       { "$ref": "#/definitions/url"     },
+        "imagePath":      { "$ref": "#/definitions/path"    },
+        "representation": { "$ref": "#/definitions/depthImageRepresentation" },
+        "width":          { "$ref": "#/definitions/reorientDiscreteDepthDimension" },
+        "height":         { "$ref": "#/definitions/reorientDiscreteDepthDimension" },
+        "minLambda":      { "$ref": "#/definitions/lambda" },
+        "maxLambda":      { "$ref": "#/definitions/lambda" },
+        "mapToImage":
+        {
+          "description": "mapping of depthMap pixel coordinates to normalized image coordinates",
+          "type": "object",
+          "required": [ "origin", "xStep", "yStep" ],
+          "additionalProperties": false,
+          "properties":
+          {
+            "origin":
+            {
+              "description": "normalized image coordinates (usually RNC, sometime WNC) corresponding to depthMap coord [0.0, 0.0]",
+              "type": "object",
+              "required": [ "x", "y" ],
+              "additionalProperties": false,
+              "properties":
+              {
+                "x":
+                {
+                  "$ref": "#/definitions/normalizedCoord",
+                  "default": 0.0
+                },
+                "y":
+                {
+                  "$ref": "#/definitions/normalizedCoord",
+                  "default": 0.0
+                }
+              }
+            },
+            "xStep":
+            {
+              "description": "signed change in normalized image coords for a step from depth-map coord [x, y] to coord [x+1.0, y]",
+              "type": "object",
+              "required": [ "dx", "dy" ],
+              "additionalProperties": false,
+              "properties":
+              {
+                "dx":
+                {
+                  "description": "default is (1.0 / imageWidth)",
+                  "$ref": "#/definitions/normalizedDistance"
+                },
+                "dy":
+                {
+                  "$ref": "#/definitions/normalizedDistance",
+                  "default": 0.0
+                }
+              }
+            },
+            "yStep":
+            {
+              "description": "signed change in normalized image coords for a step from depth-map coord [x, y] to coord [x, y+1.0]",
+              "type": "object",
+              "required": [ "dx", "dy" ],
+              "additionalProperties": false,
+              "properties":
+              {
+                "dx":
+                {
+                  "$ref": "#/definitions/normalizedDistance",
+                  "default": 0.0
+                },
+                "dy":
+                {
+                  "description": "default is (1.0 / imageHeight)",
+                  "$ref": "#/definitions/normalizedDistance"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "viewAccelerationConfidenceMap":
+    {
+      "description": "confidence map that is useful for picture processing",
+      "type": "object",
+      "required": [ "representation", "width", "height" ],
+      "oneOf":
+      [
+        { "required": [ "imageRef"  ] },
+        { "required": [ "imageUrl"  ] },
+        { "required": [ "imagePath" ] }
+      ],
+      "additionalProperties": false,
+      "properties":
+      {
+        "imageRef":       { "$ref": "#/definitions/blobRef" },
+        "imageUrl":       { "$ref": "#/definitions/url"     },
+        "imagePath":      { "$ref": "#/definitions/path"    },
+        "representation": { "$ref": "#/definitions/confidenceImageRepresentation" },
+        "width":          { "$ref": "#/definitions/reorientDiscreteDepthDimension" },
+        "height":         { "$ref": "#/definitions/reorientDiscreteDepthDimension" }
+      }
+    },
+    "pixelAspectRatio":
+    {
+      "description": "pixel width/height ratio that distorts the image to the desired proportions",
+      "allOf":
+      [
+        { "$ref": "#/definitions/positiveNumber" },
+        { "default": 1.0 }
+      ]
+    },
+    "reorientPixelOverscan":
+    {
+      "description": "hide <x> left-edge pixels, <x> right-edge pixels, <y> bottom-edge pixels, and <y> top-edge pixels, all in RPC",
+      "type": "object",
+      "required": [ "x", "y" ],
+      "additionalProperties": false,
+      "properties":
+      {
+        "x": { "$ref": "#/definitions/reorientPixelDimension" },
+        "y": { "$ref": "#/definitions/reorientPixelDimension" }
+      }
+    },
+    "reorientPitchRatio":
+    {
+      "description": "ratios of <x> and <y> pixel pitches (in RPC) to the single microlens pitch",
+      "type": "object",
+      "required": [ "x", "y" ],
+      "additionalProperties": false,
+      "properties":
+      {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      }
+    },
+    "stereoContent":
+    {
+      "type": "string",
+      "enum": [ "none", "left-eye", "right-eye", "side-by-side" ]
+    },
+    "depthImageRepresentation":
+    {
+      "description": "encoded bytes map linearly to lambda values: [0, 255] -> [minLambda, maxLambda]",
+      "type": "string",
+      "enum": [ "bmpEncodedByte", "pngEncodedByte", "packedEncodedByte", "packedFloat" ]
+    },
+    "confidenceImageRepresentation":
+    {
+      "description": "unsigned bytes map linearly to confidence values: [0, 255] -> [0.0, 1.0]",
+      "type": "string",
+      "enum": [ "bmpUnsignedByte", "pngUnsignedByte", "packedUnsignedByte", "packedFloat" ]
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "title": "ldk private schema",
+  "description": "Copyright © 2014 Lytro, Inc.  All Rights Reserved.\n\nNOTICE: This file is proprietary to Lytro, Inc. (“Lytro”) and may be subject to patent, copyright, and other intellectual property and contractual protections. It can be used to validate metadata in LFP files that are fully compliant with an LFP specification published by Lytro. Any other use, and any modification and distribution, of this file require a separate written agreement with Lytro.\n\nThis file is distributed WITHOUT ANY WARRANTY, including but not limited to the implied warranties of MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE or NON-INFRINGEMENT.  See your license for more details.",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [ "schema", "generator", "camera", "devices" ],
+  "additionalProperties": true,
+  "properties":
+  {
+    "schema":
+    {
+      "title": "http://schema.lytro.com/lfp/ldk_private/1.0.0/ldk_private_schema.json",
+      "description": "schema that describes the metadata",
+      "type": "string",
+      "format": "uri"
+    },
+    "generator":
+    {
+      "description": "the program responsible for generating this metadata",
+      "type": "string"
+    },
+    "camera":
+    {
+      "type": "object",
+      "additionalProperties": true,
+      "properties":
+      {
+        "serialNumber":
+        {
+          "description": "software-queryable from the lens-control board",
+          "type": "string"
+        }
+      }
+    },
+    "devices":
+    {
+      "type": "object",
+      "additionalProperties": true,
+      "properties":
+      {
+        "flashUnits":
+        {
+          "description": "array of flash units",
+          "type": "array",
+          "minItems": 0,
+          "items":
+          {
+            "type": "object",
+            "additionalProperties": true,
+            "properties":
+            {
+              "serialNumber":
+              {
+                "description": "optional, because element order must match public array, and SN may not be available",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "lens":
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties":
+          {
+            "serialNumber":
+            {
+              "type": "string"
+            }
+          }
+        },
+        "sensor":
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties":
+          {
+            "serialNumber":
+            {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions":
+  {
+    "degree":
+    {
+      "type": "number"
+    }
+  }
+}

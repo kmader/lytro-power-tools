@@ -1,0 +1,10 @@
+{
+    "script_duration": "Not finished", 
+    "pictures": 2, 
+    "interval": 0, 
+    "func": "self.perform_captures()", 
+    "sleep_timeout": "0", 
+    "total_captures": 2, 
+    "label_margin": 150, 
+    "tool_name": "Captures"
+}

@@ -1,0 +1,7 @@
+[console_scripts]
+cameracontrols = lpt.bin.cameracontrols:main
+cameratool = lpt.bin.cameratool:main
+lfptool = lpt.bin.lfptool:build
+recipetool = lpt.bin.recipetool:build
+webtool = lpt.bin.webtool:build
+

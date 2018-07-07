@@ -1,0 +1,1449 @@
+{
+  "title": "LFP ldk public schema",
+  "description": "Copyright © 2014 Lytro, Inc.  All Rights Reserved.\n\nNOTICE: This file is proprietary to Lytro, Inc. (''Lytro'') and may be subject to patent, copyright, and other intellectual property and contractual protections. It can be used to validate metadata in LFP files that are fully compliant with an LFP specification published by Lytro. Any other use, and any modification and distribution, of this file require a separate written agreement with Lytro.\n\nThis file is distributed WITHOUT ANY WARRANTY, including but not limited to the implied warranties of MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE or NON-INFRINGEMENT.  See your license for more details.",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required":
+  [
+    "schema",
+    "generator",
+    "camera",
+    "picture",
+    "settings",
+    "image",
+    "algorithms",
+    "devices"
+  ],
+  "additionalProperties": true,
+  "properties":
+  {
+    "schema":
+    {
+      "title": "http://schema.lytro.com/lfp/ldk_public/1.0.0/ldk_public_schema.json",
+      "description": "schema that describes the metadata",
+      "type": "string",
+      "format": "uri"
+    },
+    "generator":
+    {
+      "description": "the program responsible for generating this metadata",
+      "type": "string"
+    },
+    "camera":
+    {
+      "description": "basic information about the camera",
+      "type": "object",
+      "required": [ "make", "model", "firmware" ],
+      "additionalProperties": true,
+      "properties":
+      {
+        "make":
+        {
+          "description": "name of original equipment manufacturer",
+          "type": "string",
+          "enum": [ "Lytro, Inc." ]
+        },
+        "model":
+        {
+          "description": "model name or number",
+          "type": "string",
+          "enum": [ "LDK01" ]
+        },
+        "notes":
+        {
+          "description": "arbitrary notes regarding the camera configuration"
+        },
+        "firmware":
+        {
+          "description": "the revision of firmware installed on the camera",
+          "type": "string"
+        }
+      }
+    },
+    "picture":
+    {
+      "description": "information about the original picture (the one this frame was captured for)",
+      "type": "object",
+      "required": [ "totalFrames", "frameIndex" ],
+      "additionalProperties": true,
+      "properties":
+      {
+        "totalFrames":
+        {
+          "description": "total number of frames in the picture; omit property if total is unknown",
+          "$ref": "#/definitions/positiveInt"
+        },
+        "frameIndex":
+        {
+          "description": "zero-based index of this frame; omit property if index is unknown",
+          "$ref": "#/definitions/nonNegativeInt"
+        },
+        "dcfDirectory":
+        {
+          "description": "on-camera directory where the picture containing this frame was initially stored",
+          "type": "string",
+          "pattern": "[1-9][0-9]{2}([A-Z]|[0-9]|_){5}"
+        },
+        "dcfFile":
+        {
+          "description": "on-camera filename of the picture containing this frame",
+          "type": "string",
+          "pattern": "([A-Z]|[0-9]|_){4}[0-9]{4}"
+        }
+      }
+    },
+    "settings":
+    {
+      "description": "camera settings at the moment of capture",
+      "type": "object",
+      "required": [ "zoom", "focus", "exposure", "shutter", "flash", "whiteBalance" ],
+      "additionalProperties": true,
+      "properties":
+      {
+        "depth":
+        {
+          "title": "settings that affect depth feedback",
+          "description": "off and on for now, may add usage indication later",
+          "type": "object",
+          "additionalProperties": true,
+          "properties":
+          {
+            "assist":
+            {
+              "anyOf": [ { "enum": [ "off", "on" ] }, { "type": "string" } ]
+            },
+            "histogram":
+            {
+              "anyOf": [ { "enum": [ "off", "on" ] }, { "type": "string" } ]
+            },
+            "overlay":
+            {
+              "anyOf": [ { "enum": [ "off", "on" ] }, { "type": "string" } ]
+            }
+          }
+        },
+        "zoom":
+        {
+          "description": "settings that affect lens zoom",
+          "type": "object",
+          "additionalProperties": true,
+          "properties":
+          {
+            "ringLock":
+            {
+              "description": "while true, movement of the zoom ring has no effect on lens focal length",
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        "focus":
+        {
+          "description": "settings that affect lens focus",
+          "type": "object",
+          "dependencies": { "bracketCount": [ "bracketStep", "bracketOffset" ] },
+          "additionalProperties": true,
+          "properties":
+          {
+            "mode":
+            {
+              "allOf":
+              [
+                { "anyOf": [ { "enum": [ "auto", "manual", "instant" ] }, { "type": "string" } ] },
+                { "default": "auto" }
+              ]
+            },
+            "ringLock":
+            {
+              "description": "while true, movement of the focus ring has no effect on camera focus",
+              "type": "boolean",
+              "default": false
+            },
+            "captureLambda":
+            {
+              "description": "the camera offsets focus at the moment of capture; an object that was in live-view focus is captured at this lambda",
+              "$ref": "#/definitions/lambda"
+            },
+            "bracketEnable":
+            {
+              "type": "boolean",
+              "default": false
+            },
+            "bracketCount":
+            {
+              "description": "number of different focuses to capture",
+              "type": "integer"
+            },
+            "bracketStep":
+            {
+              "description": "focus difference per bracket step",
+              "$ref": "#/definitions/lambda"
+            },
+            "bracketOffset":
+            {
+              "description": "focus offset for the first bracket",
+              "$ref": "#/definitions/lambda"
+            },
+            "afActuationMode":
+            {
+              "allOf":
+              [
+                { "anyOf": [ { "enum": [ "single", "continuous" ] }, { "type": "string" } ] },
+                { "default": "single" }
+              ]
+            },
+            "afDriveMode":
+            {
+              "allOf":
+              [
+                { "anyOf": [ { "enum": [ "manual", "instant", "single", "continuous" ] }, {"type": "string"} ] },
+                { "default": "manual" }
+              ]
+            },
+            "roi":
+            {
+              "description": "user-specified focus region of interest",
+              "$ref": "#/definitions/roi"
+            }
+          }
+        },
+        "exposure":
+        {
+          "description": "settings that affect exposure",
+          "type": "object",
+          "dependencies": { "bracketCount": [ "bracketStep", "bracketOffset" ] },
+          "additionalProperties": true,
+          "properties":
+          {
+            "mode":
+            {
+              "allOf":
+              [
+                { "anyOf": [ { "enum": [ "program", "isoPriority", "shutterPriority", "manual" ] }, { "type": "string" } ] },
+                { "default": "program" }
+              ]
+            },
+            "compensation":
+            {
+              "description": "signed exposure compensation",
+              "$ref": "#/definitions/evStop",
+              "default": 0.0
+            },
+            "bracketEnable":
+            {
+              "type": "boolean",
+              "default": false
+            },
+            "bracketCount":
+            {
+              "description": "number of different exposures to capture",
+              "type": "integer"
+            },
+            "bracketStep":
+            {
+              "description": "exposure difference per bracket step",
+              "$ref": "#/definitions/evStop"
+            },
+            "bracketOffset":
+            {
+              "description": "exposure offset for the first bracket",
+              "$ref": "#/definitions/evStop"
+            },
+            "aeLock":
+            {
+              "description": "true if auto exposure was locked when the frame was captured",
+              "type": "boolean"
+            },
+            "meter":
+            {
+              "description": "settings that affect metering",
+              "type": "object",
+              "dependencies": { "roi": [ "roiMode" ] },
+              "additionalProperties": true,
+              "properties":
+              {
+                "mode":
+                {
+                  "allOf":
+                  [
+                    { "anyOf": [ { "enum": [ "evaluative", "average", "roiAverage" ] }, { "type": "string" } ] },
+                    { "default": "evaluative" }
+                  ]
+                },
+                "roiMode":
+                {
+                  "allOf":
+                  [
+                    { "anyOf": [ { "enum": [ "af", "center", "manual" ] }, { "type": "string" } ] },
+                    { "default": "af" }
+                  ]
+                },
+                "roi":
+                {
+                  "description": "user-specified exposure region of interest",
+                  "$ref": "#/definitions/roi"
+                }
+              }
+            }
+          }
+        },
+        "shutter":
+        {
+          "description": "settings that affect actuation of the shutter",
+          "type": "object",
+          "additionalProperties": true,
+          "properties":
+          {
+            "driveMode":
+            {
+              "allOf":
+              [
+                { "anyOf": [ { "enum": [ "single", "continuous", "timer", "auto", "timeLapse" ] }, { "type": "string" } ] },
+                { "default": "single" }
+              ]
+            },
+            "selfTimerEnable":
+            {
+              "type": "boolean"
+            },
+            "selfTimerDuration":
+            {
+              "$ref": "#/definitions/duration"
+            }
+          }
+        },
+        "flash":
+        {
+          "description": "settings that affect flash operation",
+          "type": "object",
+          "additionalProperties": true,
+          "properties":
+          {
+            "mode":
+            {
+              "anyOf": [ { "enum": [ "off", "on", "manual", "ttl", "multi" ] }, { "type": "string" } ]
+            },
+            "exposureCompensation":
+            {
+              "$ref": "#/definitions/evStop"
+            },
+            "zoomMode":
+            {
+              "anyOf": [ { "enum": [ "manual", "auto" ] }, { "type": "string" } ]
+            },
+            "curtainTriggerSync":
+            {
+              "anyOf": [ { "enum": [ "front", "rear" ] }, { "type": "string" } ]
+            },
+            "afAssistMode":
+            {
+              "anyOf": [ { "enum": [ "off", "auto" ] }, { "type": "string" } ]
+            }
+          }
+        },
+        "whiteBalance":
+        {
+          "description": "settings that affect white balance",
+          "type": "object",
+          "additionalProperties": true,
+          "properties":
+          {
+            "mode":
+            {
+              "allOf":
+              [
+                { "anyOf": [ { "enum": [ "auto", "preset", "manual" ] }, { "type": "string" } ] },
+                { "default": "auto" }
+              ]
+            },
+            "preset":
+            {
+              "description": "if mode is preset, specifies the preset value",
+              "allOf":
+              [
+                { "anyOf": [ { "enum": [ "tungsten", "fluorescent", "daylight", "cloudy", "shade", "flash", "custom" ] }, { "type": "string" } ] },
+                { "default": "tungsten" }
+              ]
+            },
+            "cct":
+            {
+              "$ref": "#/definitions/cct"
+            },
+            "tint":
+            {
+              "type": "number",
+              "minimum": -150,
+              "maximum": 150
+            }
+          }
+        }
+      }
+    },
+    "image":
+    {
+      "description": "image read from the sensor, with exposure information and color-processing suggestions",
+      "type": "object",
+      "required":
+      [
+        "width",
+        "height",
+        "originOnSensor",
+        "orientation",
+        "mosaic",
+        "pixelPacking",
+        "pixelFormat",
+        "modulationExposureBias",
+        "limitExposureBias",
+        "iso"
+      ],
+      "additionalProperties": true,
+      "properties":
+      {
+        "width":
+        {
+          "$ref": "#/definitions/sensorDiscretePixelDimension"
+        },
+        "height":
+        {
+          "$ref": "#/definitions/sensorDiscretePixelDimension"
+        },
+        "originOnSensor":
+        {
+          "type": "object",
+          "required": [ "x", "y" ],
+          "additionalProperties": true,
+          "properties":
+          {
+            "x": { "$ref": "#/definitions/sensorDiscretePixelCoord" },
+            "y": { "$ref": "#/definitions/sensorDiscretePixelCoord" }
+          }
+        },
+        "orientation":
+        {
+          "description": "camera-assigned orientation, may take camera orientation into account",
+          "$ref": "#/definitions/exifOrientation"
+        },
+        "mosaic":
+        {
+          "description": "tiling of color data",
+          "type": "object",
+          "required": [ "tile", "upperLeftPixel" ],
+          "additionalProperties": true,
+          "properties":
+          {
+            "tile":
+            {
+              "anyOf": [ { "enum": [ "r,gr:gb,b" ] }, { "type": "string" } ]
+            },
+            "upperLeftPixel":
+            {
+              "anyOf": [ { "enum": [ "r", "gr", "gb", "b" ] }, { "type": "string" } ]
+            }
+          }
+        },
+        "pixelPacking":
+        {
+          "description": "how pixels are packed in the byte stream",
+          "type": "object",
+          "required": [ "endianness", "bitsPerPixel" ],
+          "additionalProperties": true,
+          "properties":
+          {
+            "endianness":
+            {
+              "description": "little means less-significant bytes precede more-significant bytes; big means the opposite",
+              "type": "string",
+              "enum": [ "little", "big" ]
+            },
+            "bitsPerPixel":
+            {
+              "description": "number of bits allocated to each pixel in the byte stream; may exceed sensor bits per pixel",
+              "$ref": "#/definitions/positiveInt"
+            }
+          }
+        },
+        "pixelFormat":
+        {
+          "description": "how to interpret each pixel",
+          "type": "object",
+          "required": [ "rightShift", "black", "white" ],
+          "additionalProperties": true,
+          "properties":
+          {
+            "rightShift":
+            {
+              "description": "number of meaningless LSBs, if any",
+              "$ref": "#/definitions/nonNegativeInt"
+            },
+            "black":
+            {
+              "description": "value of a black pixel",
+              "type": "object",
+              "required": [ "r", "gr", "gb", "b" ],
+              "additionalProperties": true,
+              "properties":
+              {
+                "r":  { "$ref": "#/definitions/nonNegativeInt" },
+                "gr": { "$ref": "#/definitions/nonNegativeInt" },
+                "gb": { "$ref": "#/definitions/nonNegativeInt" },
+                "b":  { "$ref": "#/definitions/nonNegativeInt" }
+              }
+            },
+            "white":
+            {
+              "description": "value of a white pixel",
+              "type": "object",
+              "required": [ "r", "gr", "gb", "b" ],
+              "additionalProperties": true,
+              "properties":
+              {
+                "r":  { "$ref": "#/definitions/nonNegativeInt" },
+                "gr": { "$ref": "#/definitions/nonNegativeInt" },
+                "gb": { "$ref": "#/definitions/nonNegativeInt" },
+                "b":  { "$ref": "#/definitions/nonNegativeInt" }
+              }
+            }
+          }
+        },
+        "modulationExposureBias":
+        {
+          "description": "exposure bias added by camera to compensate for micro-lens modulation",
+          "$ref": "#/definitions/evStop"
+        },
+        "limitExposureBias":
+        {
+          "description": "exposure bias added by camera due to its limited exposure range",
+          "$ref": "#/definitions/evStop"
+        },
+        "iso":
+        {
+          "description": "aggregate analog and digital gain of the camera system",
+          "$ref": "#/definitions/positiveInt"
+        },
+        "color":
+        {
+          "description": "color processing applied by the camera for thumbnails, playback, etc., but NOT applied to the sensor image",
+          "type": "object",
+          "required": [ "whiteBalanceGain", "ccm" ],
+          "additionalProperties": true,
+          "properties":
+          {
+            "whiteBalanceGain":
+            {
+              "type": "object",
+              "required": [ "r", "gr", "gb", "b" ],
+              "additionalProperties": true,
+              "properties":
+              {
+                "r":  { "$ref": "#/definitions/nonNegativeNumber" },
+                "gr": { "$ref": "#/definitions/nonNegativeNumber" },
+                "gb": { "$ref": "#/definitions/nonNegativeNumber" },
+                "b":  { "$ref": "#/definitions/nonNegativeNumber" }
+              }
+            },
+            "ccm":
+            {
+              "type": "array",
+              "minItems": 9,
+              "maxItems": 9,
+              "items":
+              {
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
+    },
+    "algorithms":
+    {
+      "description": "inputs to and outputs from significant camera algorithms, (may be extended to include face detection, scene classification, etc.)",
+      "type": "object",
+      "additionalProperties": true,
+      "properties":
+      {
+        "awb":
+        {
+          "type": "object",
+          "required": [ "roi", "computed" ],
+          "additionalProperties": true,
+          "properties":
+          {
+            "roi":
+            {
+              "anyOf": [ { "enum": [ "fullFrame" ] }, { "type": "string" } ]
+            },
+            "computed":
+            {
+              "description": "parameters computed by the awb algorithm",
+              "type": "object",
+              "required": [ "gain", "cct" ],
+              "additionalProperties": true,
+              "properties":
+              {
+                "gain":
+                {
+                  "type": "object",
+                  "required": [ "r", "gr", "gb", "b" ],
+                  "additionalProperties": true,
+                  "properties":
+                  {
+                    "r":  { "$ref": "#/definitions/nonNegativeNumber" },
+                    "gr": { "$ref": "#/definitions/nonNegativeNumber" },
+                    "gb": { "$ref": "#/definitions/nonNegativeNumber" },
+                    "b":  { "$ref": "#/definitions/nonNegativeNumber" }
+                  }
+                },
+                "cct":
+                {
+                  "$ref": "#/definitions/cct"
+                }
+              }
+            }
+          }
+        },
+        "ae":
+        {
+          "type": "object",
+          "required": [ "roi", "computed" ],
+          "additionalProperties": true,
+          "properties":
+          {
+            "roi":
+            {
+              "anyOf": [ { "enum": [ "fullFrame", "meterRoi", "followAf" ] }, { "type": "string" } ]
+            },
+            "computed":
+            {
+              "description": "parameters computed by the ae algorithm",
+              "type": "object",
+              "required": [ "ev" ],
+              "additionalProperties": true,
+              "properties":
+              {
+                "ev":
+                {
+                  "$ref": "#/definitions/nonNegativeNumber"
+                }
+              }
+            }
+          }
+        },
+        "af":
+        {
+          "type": "object",
+          "required": [ "roi", "computed" ],
+          "additionalProperties": true,
+          "properties":
+          {
+            "roi":
+            {
+              "anyOf": [ { "enum": [ "focusRoi" ] }, { "type": "string" } ]
+            },
+            "computed":
+            {
+              "description": "parameters computed by the af algorithm",
+              "type": "object",
+              "required": [ "focusStep" ],
+              "additionalProperties": true,
+              "properties":
+              {
+                "focusStep":
+                {
+                  "description": "computed (live-view) focus stepper-motor position",
+                  "$ref": "#/definitions/step"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "devices":
+    {
+      "description": "invariant and usage-specific properties of various camera devices",
+      "type": "object",
+      "required":
+      [
+        "clock",
+        "frameGrabber",
+        "lens",
+        "mla",
+        "sensor",
+        "shutter"
+      ],
+      "additionalProperties": true,
+      "properties":
+      {
+        "accelerometer":
+        {
+          "description": "measures acceleration in three axes",
+          "type": "object",
+          "required": [ "samples" ],
+          "additionalProperties": true,
+          "properties":
+          {
+            "samples":
+            {
+              "type": "array",
+              "minItems": 0,
+              "uniqueItems": true,
+              "items":
+              {
+                "description": "accelerometer sample",
+                "type": "object",
+                "required": [ "x", "y", "z", "time" ],
+                "additionalProperties": true,
+                "properties":
+                {
+                  "x": { "$ref": "#/definitions/gravity" },
+                  "y": { "$ref": "#/definitions/gravity" },
+                  "z": { "$ref": "#/definitions/gravity" },
+                  "time":
+                  {
+                    "description": "sample time relative to the frame's zuluTime, negative before, positive after",
+                    "$ref": "#/definitions/second"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "battery":
+        {
+          "type": "object",
+          "required": [ "chargeLevel" ],
+          "additionalProperties": true,
+          "properties":
+          {
+            "make":
+            {
+              "description": "name of original equipment manufacturer",
+              "type": "string"
+            },
+            "model":
+            {
+              "description": "model name or number",
+              "type": "string"
+            },
+            "cycleCount":
+            {
+              "description": "number of charging cycles this battery has experienced",
+              "$ref": "#/definitions/nonNegativeInt"
+            },
+            "chargeLevel":
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "chargeSource":
+            {
+              "description": "at zuluTime",
+              "anyOf" : [ { "enum": [ "none", "usb", "charger" ] }, { "type": "string" } ]
+            }
+          }
+        },
+        "clock":
+        {
+          "type": "object",
+          "required": [ "zuluTime" ],
+          "additionalProperties": true,
+          "properties":
+          {
+            "zuluTime":
+            {
+              "description": "moment when the sensor began integrating light",
+              "$ref": "#/definitions/zuluTime"
+            },
+            "isTimeValid":
+            {
+              "description": "if false, the reported time may be substantially incorrect, perhaps due to camera power loss",
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        "flashUnits":
+        {
+          "description": "array of flash units",
+          "type": "array",
+          "minItems": 0,
+          "items":
+          {
+            "description": "configuration and contribution of an individual flash unit",
+            "type": "object",
+            "required": [ "config", "mode", "power", "zoom"],
+            "additionalProperties": true,
+            "properties":
+            {
+              "make":
+              {
+                "description": "name of original equipment manufacturer",
+                "type": "string"
+              },
+              "model":
+              {
+                "description": "model name or number",
+                "type": "string"
+              },
+              "firmware":
+              {
+                "description": "revision of firmware installed",
+                "type": "string"
+              },
+              "config":
+              {
+                "description": "how the flash unit is configured into or connected to the camera",
+                "anyOf": [ { "enum": [ "builtIn", "hotShoe", "remote" ] }, { "type": "string" } ]
+              },
+              "mode":
+              {
+                "description": "specified operating mode",
+                "anyOf": [ { "enum": [ "off", "manual", "ttl", "multi" ] }, { "type": "string" } ]
+              },
+              "power":
+              {
+                "description": "achieved illumination power, per pulse, normalized to the range [0.0, 1.0]",
+                "type": "number",
+                "minimum": 0.0,
+                "maximum": 1.0
+              },
+              "duration":
+              {
+                "description": "t.1 flash-illumination duration, per pulse",
+                "$ref": "#/definitions/duration"
+              },
+              "multiPulse":
+              {
+                "description": "describes sequence of flash pulses",
+                "type": "object",
+                "additionalProperties": true,
+                "properties":
+                {
+                  "count":
+                  {
+                    "description": "number of individual flash pulses",
+                    "allOf": [ { "ref": "#/definitions/positiveInt" }, { "default": 1 } ]
+                  },
+                  "frequency":
+                  {
+                    "description": "flash pulses per second",
+                    "type": "number",
+                    "default": 0.0
+                  }
+                }
+              },
+              "exposureCompensation":
+              {
+                "description": "on-flash setting",
+                "$ref": "#/definitions/evStop"
+              },
+              "redEyeReduction":
+              {
+                "description": "red-eye reduction",
+                "type": "boolean",
+                "default": false
+              },
+              "zoom": 
+              {
+		"type": "object",
+            	"required": [ "mode", "coverage" ],
+                "additionalProperties": true,
+            	"properties":
+		{
+                  "mode" :
+                  {
+                    "description": "selected zoom mode",
+                    "anyOf": [ { "enum": [ "fixed", "manual", "auto" ] }, { "type": "string" } ]
+                  },
+                  "coverage":
+                  {
+                    "description": "35 mm equivalent field of illumination coverage, expressed as a focal length",
+                    "$ref": "#/definitions/meter"
+                  }
+	        }
+              }
+            }
+          }
+        },
+        "frameGrabber":
+        {
+          "type": "object",
+          "required": [ "make", "model" ],
+          "additionalProperties": true,
+          "properties":
+          {
+            "make":
+            {
+              "description": "name of original equipment manufacturer",
+              "anyOf": [ { "enum": [ "Graphin" ] }, { "type": "string" } ]
+            },
+            "model":
+            {
+              "description": "model name or number",
+              "anyOf": [ { "enum": [ "GPLAB-1000-4U" ] }, { "type": "string" } ]
+            },
+            "firmware":
+            {
+              "description": "revision of firmware installed",
+              "type": "string"
+            }
+          }
+        },
+        "lens":
+        {
+          "description": "properties of the main lens at the moment the sensor began integrating light",
+          "type": "object",
+          "additionalProperties": true,
+          "properties":
+          {
+            "make":
+            {
+              "description": "name of original equipment manufacturer",
+              "type": "string"
+            },
+            "model":
+            {
+              "description": "model name or number",
+              "type": "string"
+            },
+            "notes":
+            {
+              "description": "arbitrary notes regarding the lens",
+              "type": "string"
+            },
+            "firmware":
+            {
+              "description": "revision of firmware installed",
+              "type": "string"
+            },
+            "focalLength":
+            {
+              "description": "actual (not equivalent) focal length of the lens",
+              "$ref": "#/definitions/meter"
+            },
+            "infinityLambda":
+            {
+              "description": "distance ahead of the MLA that is in focus at infinity",
+              "$ref": "#/definitions/lambda"
+            },
+            "focusDistance":
+            {
+              "description": "distance from a fixed reference on the camera to the object focal plane",
+              "$ref": "#/definitions/meter"
+            },
+            "zoomStep":
+            {
+              "description": "zoom stepper-motor position",
+              "$ref": "#/definitions/step"
+            },
+            "focusStep":
+            {
+              "description": "focus stepper-motor position",
+              "$ref": "#/definitions/step"
+            },
+            "fNumber":
+            {
+              "description": "ratio of focal length to entrance-pupil diameter",
+              "$ref": "#/definitions/nonNegativeNumber"
+            },
+            "exitPupilOffset":
+            {
+              "description": "relative location of the exit pupil",
+              "type": "object",
+              "required": [ "z" ],
+              "additionalProperties": true,
+              "properties":
+              {
+                "z":
+                {
+                  "description": "the distance, along the optical axis, from the exit pupil to the micro lens plane",
+                  "$ref": "#/definitions/meter"
+                }
+              }
+            },
+            "opticalCenterOffset":
+            {
+              "description": "relationship of optical axis to sensor surface",
+              "type": "object",
+              "required": [ "x", "y" ],
+              "additionalProperties": true,
+              "properties":
+              {
+                "x":
+                {
+                  "description": "the signed horizontal offset (left-of is negative) from the sensor center to the intersection with the optical axis",
+                  "$ref": "#/definitions/meter"
+                },
+                "y":
+                {
+                  "description": "the signed vertical offset (above is negative) from the sensor center to the intersection with the optical axis",
+                  "$ref": "#/definitions/meter"
+                }
+              }
+            }
+          }
+        },
+        "mla":
+        {
+          "description": "information about the micro-lens array",
+          "type": "object",
+          "required":
+          [
+            "config",
+            "tiling",
+            "rotation",
+            "lensPitch",
+            "scaleFactor",
+            "sensorOffset"
+          ],
+          "additionalProperties": true,
+          "properties":
+          {
+            "config":
+            {
+              "description": "string indicating providence of the MLA",
+              "type": "string"
+            },
+            "tiling":
+            {
+              "description": "arrangement of micro lenses on the MLA",
+              "anyOf": [ { "enum": [ "hexUniformRowMajor" ] }, { "type": "string" } ]
+            },
+            "rotation":
+            {
+              "description": "positive values indicate CW rotation, viewed from the optical axis in front of the camera",
+              "$ref": "#/definitions/radian"
+            },
+            "lensPitch":
+            {
+              "description": "minimum center-to-center distance between micro lenses",
+              "$ref": "#/definitions/meter"
+            },
+            "scaleFactor":
+            {
+              "type": "object",
+              "required": [ "x", "y" ],
+              "additionalProperties": true,
+              "properties":
+              {
+                "x":
+                {
+                  "$ref": "#/definitions/nonNegativeNumber"
+                },
+                "y":
+                {
+                  "$ref": "#/definitions/nonNegativeNumber"
+                }
+              }
+            },
+            "sensorOffset":
+            {
+              "description": "geometric relationship of the mla relative to the CMOS sensor surface",
+              "type": "object",
+              "required": [ "x", "y", "z" ],
+              "additionalProperties": true,
+              "properties":
+              {
+                "x":
+                {
+                  "description": "the signed horizontal offset (left-of is negative) from the center of the micro-lens that is nearest to the optical axis, to the center of the CMOS sensor",
+                  "$ref": "#/definitions/meter"
+                },
+                "y":
+                {
+                  "description": "the signed vertical offset (above is negative) from the center of the micro-lens that is nearest to the optical axis, to the center of the CMOS sensor",
+                  "$ref": "#/definitions/meter"
+                },
+                "z":
+                {
+                  "description": "the distance, along the optical axis, from the mla plane to the CMOS sensor plane",
+                  "$ref": "#/definitions/meter"
+                }
+              }
+            }
+          }
+        },
+        "sdCard":
+        {
+          "type": "object",
+          "required": [ "capacity", "class" ],
+          "additionalProperties": true,
+          "properties":
+          {
+            "make":
+            {
+              "description": "name of original equipment manufacturer",
+              "type": "string"
+            },
+            "model":
+            {
+              "description": "model name or number",
+              "type": "string"
+            },
+            "capacity":
+            {
+              "description": "storage capacity in bytes",
+              "$ref": "#/definitions/positiveInt"
+            },
+            "class":
+            {
+              "description": "class of the storage card",
+              "type": "string"
+            }
+          }
+        },
+        "sensor":
+        {
+          "description": "information about the CMOS sensor",
+          "type": "object",
+          "required":
+          [
+            "pixelWidth",
+            "pixelHeight",
+            "pixelPitch",
+            "mosaic",
+            "bitsPerPixel",
+            "baseIso",
+            "analogGain"
+          ],
+          "additionalProperties": true,
+          "properties":
+          {
+            "pixelWidth":
+            {
+              "$ref": "#/definitions/sensorDiscretePixelDimension"
+            },
+            "pixelHeight":
+            {
+              "$ref": "#/definitions/sensorDiscretePixelDimension"
+            },
+            "pixelPitch":
+            {
+              "description": "center-to-center distance between adjacent pixels",
+              "$ref": "#/definitions/meter"
+            },
+            "mosaic":
+            {
+              "description": "arrangement of color filters on the sensor surface",
+              "type": "object",
+              "required": [ "tile", "upperLeftPixel" ],
+              "additionalProperties": true,
+              "properties":
+              {
+                "tile":
+                {
+                  "description": "basic tile arrangement",
+                  "anyOf": [ { "enum": [ "r,gr:gb,b" ] }, { "type": "string" } ]
+                },
+                "upperLeftPixel":
+                {
+                  "description": "upper-left pixel in sensor array",
+                  "anyOf": [ { "enum": [ "r", "gr", "gb", "b" ] }, { "type": "string" } ]
+                }
+              }
+            },
+            "bitsPerPixel":
+            {
+              "description": "bits per pixel digitally output from the sensor for this frame",
+              "$ref": "#/definitions/nonNegativeInt"
+            },
+            "temperature":
+            {
+              "description": "temperature reported by the sensor",
+              "$ref": "#/definitions/celsius"
+            },
+            "baseIso":
+            {
+              "description": "conversion factor between sensor gain and ISO units",
+              "$ref": "#/definitions/positiveNumber"
+            },
+            "analogGain":
+            {
+              "description": "amplifier gains for the individual color channels",
+              "type": "object",
+              "required": [ "r", "gr", "gb", "b" ],
+              "additionalProperties": true,
+              "properties":
+              {
+                "r":
+                {
+                  "$ref": "#/definitions/nonNegativeNumber"
+                },
+                "gr":
+                {
+                  "$ref": "#/definitions/nonNegativeNumber"
+                },
+                "gb":
+                {
+                  "$ref": "#/definitions/nonNegativeNumber"
+                },
+                "b":
+                {
+                  "$ref": "#/definitions/nonNegativeNumber"
+                }
+              }
+            },
+            "normalizedResponses":
+            {
+              "description": "measured sensor responses under various illuminations",
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items":
+              {
+                "type": "object",
+                "required": [ "cct", "r", "gr", "gb", "b" ],
+                "additionalProperties": true,
+                "properties":
+                {
+                  "cct":
+                  {
+                    "description": "color temperature that the responses were measured with (required)",
+                    "$ref": "#/definitions/cct"
+                  },
+                  "standardIlluminant":
+                  {
+                    "description": "standard illuminant that the responses were measured with (optional)",
+                    "$ref": "#/definitions/standardIlluminant"
+                  },
+                  "r":  { "$ref": "#/definitions/unitGain" },
+                  "gr": { "$ref": "#/definitions/unitGain" },
+                  "gb": { "$ref": "#/definitions/unitGain" },
+                  "b":  { "$ref": "#/definitions/unitGain" }
+                }
+              }
+            },
+            "perCcm":
+            {
+              "description": "precomputed CCMs to convert from cRGB to sRGB, based on scene illumination",
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items":
+              {
+                "type": "object",
+                "required": [ "cct", "ccm" ],
+                "additionalProperties": true,
+                "properties":
+                {
+                  "cct":
+                  {
+                    "description": "color temperature that the ccm is optimized for (required)",
+                    "$ref": "#/definitions/cct"
+                  },
+                  "standardIlluminant":
+                  {
+                    "description": "standard illuminant that the ccm is optimized for (optional)",
+                    "$ref": "#/definitions/standardIlluminant"
+                  },
+                  "ccm":
+                  {
+                    "type": "array",
+                    "minItems": 9,
+                    "maxItems": 9,
+                    "items":
+                    {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "shutter":
+        {
+          "type": "object",
+          "required": [ "mechanism", "pixelExposureDuration" ],
+          "additionalProperties": true,
+          "properties":
+          {
+            "mechanism":
+            {
+              "anyOf": [ { "enum": [ "focalPlaneCurtain" ] }, { "type": "string" } ]
+            },
+            "pixelExposureDuration":
+            {
+              "description": "duration of exposure for an individual pixel",
+              "$ref": "#/definitions/duration"
+            },
+            "frameExposureDuration":
+            {
+              "description": "total duration of sensor illumination",
+              "$ref": "#/definitions/duration"
+            },
+            "maxSyncSpeed":
+            {
+              "description": "minimum shutter duration for which flash will operate correctly",
+              "$ref": "#/definitions/duration"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions":
+  {
+    "nonNegativeNumber":
+    {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "nonNegativeInt":
+    {
+      "type": "integer",
+      "minimum": 0
+    },
+    "positiveNumber":
+    {
+      "type": "number",
+      "minimum": 0.0,
+      "exclusiveMinimum": true
+    },
+    "positiveInt":
+    {
+      "type": "integer",
+      "minimum": 1
+    },
+    "unitGain":
+    {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "celsius":
+    {
+      "type": "number",
+      "minimum": -273.15
+    },
+    "evStop":
+    {
+      "type": "number"
+    },
+    "gravity":
+    {
+      "type": "number"
+    },
+    "cct":
+    {
+      "$ref": "#/definitions/nonNegativeNumber"
+    },
+    "lambda":
+    {
+      "type": "number"
+    },
+    "meter":
+    {
+      "type": "number"
+    },
+    "radian":
+    {
+      "type": "number"
+    },
+    "second":
+    {
+      "type": "number"
+    },
+    "duration":
+    {
+      "allOf": [ { "$ref": "#/definitions/second" }, { "minimum": 0.0 } ]
+    },
+    "roi":
+    {
+      "description": "region of interest, described as the union of one or more screen regions, in FNC, not screen coords",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items":
+      {
+        "description": "one rectangular region",
+        "type": "object",
+        "required": [ "top", "left", "bottom", "right" ],
+        "additionalProperties": true,
+        "properties":
+        {
+          "top":    { "$ref": "#/definitions/frameNormalizedCoord" },
+          "left":   { "$ref": "#/definitions/frameNormalizedCoord" },
+          "bottom": { "$ref": "#/definitions/frameNormalizedCoord" },
+          "right":  { "$ref": "#/definitions/frameNormalizedCoord" }
+        }
+      },
+      "default": [ { "top": 0.0, "left": 0.0, "bottom": 1.0, "right": 1.0 } ]
+    },
+    "standardIlluminant":
+    {
+      "description": "name of a CIE standard illuminant",
+      "type": "string",
+      "enum":
+      [
+        "A",
+        "B",
+        "C",
+        "D50",
+        "D55",
+        "D65",
+        "D75",
+        "E",
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5",
+        "F6",
+        "F7",
+        "F8",
+        "F9",
+        "F10",
+        "F11",
+        "F12"
+      ]
+    },
+    "step":
+    {
+      "type": "integer"
+    },
+    "normalizedCoord":
+    {
+      "description": "image coordinate, [0.0, 0.0] is top left, [1.0, 1.0] is bottom right.",
+      "type": "number"
+    },
+    "frameNormalizedCoord":
+    {
+      "description": "frame-space normalized coordinate, FNC",
+      "$ref": "#/definitions/normalizedCoord"
+    },
+    "discretePixelCoord":
+    {
+      "description": "image coordinate, [0, 0] is top left, [width-1, height-1] is bottom right.",
+      "type": "integer"
+    },
+    "sensorDiscretePixelCoord":
+    {
+      "description": "sensor-space pixel coordinate, SPC",
+      "$ref": "#/definitions/discretePixelCoord"
+    },
+    "discretePixelDimension":
+    {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sensorDiscretePixelDimension":
+    {
+      "$ref": "#/definitions/discretePixelDimension"
+    },
+    "zuluTime":
+    {
+      "description": "ISO 8601 format, e.g., 2011-03-30T18:07:25.134752Z, fraction to milliseconds or microseconds, Zulu time (no local offset)",
+      "pattern": "[1-2][0-9]{3}-[01][0-9]-[0123][0-9]T[012][0-9]:[0-5][0-9]:[0-5][0-9]\\.[0-9]{3,6}Z",
+      "type": "string"
+    },
+    "exifOrientation":
+    {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 8
+    }
+  }
+}

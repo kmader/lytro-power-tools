@@ -1,0 +1,75 @@
+{
+  "title": "LFP lytro illum private schema",
+  "description": "Copyright © 2014 Lytro, Inc.  All Rights Reserved.\n\nNOTICE: This file is proprietary to Lytro, Inc. (“Lytro”) and may be subject to patent, copyright, and other intellectual property and contractual protections. It can be used to validate metadata in LFP files that are fully compliant with an LFP specification published by Lytro. Any other use, and any modification and distribution, of this file require a separate written agreement with Lytro.\n\nThis file is distributed WITHOUT ANY WARRANTY, including but not limited to the implied warranties of MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE or NON-INFRINGEMENT.  See your license for more details.",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [ "schema", "generator", "camera", "devices" ],
+  "additionalProperties": false,
+  "properties":
+  {
+    "schema":
+    {
+      "title": "http://schema.lytro.com/lfp/lytro_illum_private/1.1.0/lytro_illum_private_schema.json",
+      "description": "schema that describes the metadata; specify <not released> except for released versions",
+      "type": "string",
+      "anyOf": [ { "format": "uri" }, { "enum": [ "not released" ] } ]
+    },
+    "generator":
+    {
+      "description": "the program responsible for generating this metadata",
+      "type": "string"
+    },
+    "camera":
+    {
+      "type": "object",
+      "required": [ "serialNumber" ],
+      "additionalProperties": false,
+      "properties":
+      {
+        "serialNumber":
+        {
+          "type": "string"
+        }
+      }
+    },
+    "devices":
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties":
+      {
+        "gps":
+        {
+          "type": "object",
+          "required": [ "latitude", "longitude" ],
+          "additionalProperties": false,
+          "properties":
+          {
+            "latitude":  { "$ref": "#/definitions/degree" },
+            "longitude": { "$ref": "#/definitions/degree" }
+          }
+        },
+        "sensor":
+        {
+          "type": "object",
+          "required": [ "serialNumber" ],
+          "additionalProperties": false,
+          "properties":
+          {
+            "serialNumber":
+            {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions":
+  {
+    "degree":
+    {
+      "type": "number"
+    }
+  }
+}

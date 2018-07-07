@@ -1,0 +1,51 @@
+Metadata-Version: 1.0
+Name: lytro-power-tools
+Version: 1.0.1b0
+Summary: Lytro camera control and light field image processing
+Home-page: https://www.lytro.com/platform/power-tools/
+Author: Lytro, Inc.
+Author-email: support@lytro.com
+License: LYTRO POWER TOOLS (BETA) LICENSE AGREEMENT
+Description: =================
+        Lytro Power Tools
+        =================
+        
+        .. image:: https://lytro.com/ui/images/illum/illum_hero2_2x_20150113.jpg
+                :target: https://www.lytro.com/platform/power-tools
+        
+        
+        Advanced Lytro camera control and light field image processing
+        
+        * License: LYTRO POWER TOOLS (BETA) LICENSE
+        * Documentation: see: ``Lytro_Power_Tools_Beta_1.0.1_User_Manual.pdf``
+        
+        Features
+        --------
+        
+        See Documentation for full list of Features and Quick Setup Guide
+        
+            * Camera Controls
+            * Camera Tool
+            * LFP Tool
+            * Recipe Tool
+            * Web Tool
+        
+        
+        
+        
+        History
+        -------
+        
+        1.0.1b0 (2016-01-21)
+        --------------------
+        * lfptool: calibration data not found for First Gen cameras
+        * lfptool: warp lfps extracted from Lytro Desktop 5 now supported (Windows only) 
+        * lfptool: malformed output file names in certain circumstances
+        * miscellaneous minor Python API code improvements
+        
+        1.0.0b0 (2015-08-12)
+        --------------------
+        
+        * First release of Lytro Power Tools (Beta)
+        
+Platform: UNKNOWN

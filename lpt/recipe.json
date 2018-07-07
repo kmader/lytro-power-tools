@@ -1,0 +1,94 @@
+{
+  "viewAperture": 1.0,
+  "viewBlacks2": 0,
+  "viewBlacks2Animation": {
+    "times": [
+      0.9090909090909092,
+      3.6363636363636367,
+      6.363636363636363,
+      9.090909090909092
+    ],
+    "values": [
+      1,
+      26,
+      73,
+      98
+    ],
+    "handlePairs": [
+      {
+        "dt0": 0.9090909090909092,
+        "dt1": -0.9090909090909092,
+        "dv0": 1,
+        "dv1": -4
+      },
+      {
+        "dt0": 0.9090909090909096,
+        "dt1": -0.9090909090909092,
+        "dv0": 11,
+        "dv1": -14
+      },
+      {
+        "dt0": 0.9090909090909092,
+        "dt1": -0.9090909090909101,
+        "dv0": 14,
+        "dv1": -11
+      },
+      {
+        "dt0": 0.9090909090909101,
+        "dt1": -0.9090909090909083,
+        "dv0": 4,
+        "dv1": -1
+      }
+    ]
+  },
+  "viewColorNoiseReduction": 50,
+  "viewContrast": 0,
+  "viewCrop": {
+    "angle": 0.0,
+    "top": 0.0,
+    "left": 0.0,
+    "bottom": 1.0,
+    "right": 1.0
+  },
+  "viewDefringe": false,
+  "viewDefringeRadius": 5.5,
+  "viewDefringeThreshold": 50,
+  "viewExposure": 0.0,
+  "viewFocus": 0.0,
+  "viewFocusSpread": 0.0,
+  "viewFocusX": 0.5,
+  "viewFocusY": 0.5,
+  "viewHighlights2": 0,
+  "viewLuminanceNoiseReduction": 50,
+  "viewOrientation": 1,
+  "viewPanX": 0.5,
+  "viewPanY": 0.5,
+  "viewPerspectiveU": 0.0,
+  "viewPerspectiveV": 0.0,
+  "viewPivot": 0.0,
+  "viewPriorities": [
+    "viewFocus"
+  ],
+  "viewReduceFlare": false,
+  "viewSaturation": 0,
+  "viewSaturationBlue": 0,
+  "viewSaturationCyan": 0,
+  "viewSaturationGreen": 0,
+  "viewSaturationMagenta": 0,
+  "viewSaturationRed": 0,
+  "viewSaturationYellow": 0,
+  "viewShadows2": 0,
+  "viewSharpenDetail": 50,
+  "viewSharpenEdgeMasking": 0,
+  "viewSharpenRadius": 1.0,
+  "viewSharpness2": 25,
+  "viewStereoBaseline": 0.0,
+  "viewStereoPivot": 0.0,
+  "viewTiltX": 0.0,
+  "viewTiltY": 0.0,
+  "viewVibrance": 0,
+  "viewWhiteBalance": "auto",
+  "viewWhites2": 0,
+  "viewZoom": 1.0,
+  "zuluTime": "2016-01-19T19:19:45.462540Z"
+}

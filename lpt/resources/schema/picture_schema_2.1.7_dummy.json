@@ -1,0 +1,26 @@
+{
+  "thumbnails": [],
+  "views": [
+    {
+      "accelerations": []
+    }
+  ],
+  "generators": [
+    "Lytro Lightfield Engine 21.000000"
+  ],
+  "derivations": [
+    "sha1-3b198a90bf805f5aa581688c39a5cdbad56cdd4c"
+  ],
+  "frames": [
+    {
+      "frame": {
+        "metadataRef": "sha1-618feb5c85c39b8ea416dbb0880c5e98172cbd6b",
+        "imageRef": "sha1-ee90a8bb18b05b49f6c63f525e1444911f82778e"
+      },
+      "assignedProperties": {},
+      "accelerations": []
+    }
+  ],
+  "annotations": [],
+  "schema": "http://schema.lytro.com/lfp/picture/2.1.7/picture_schema.json"
+}
